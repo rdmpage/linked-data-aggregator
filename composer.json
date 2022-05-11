@@ -1,0 +1,15 @@
+{
+    "name": "rpage/linked-data-aggregator",
+    "authors": [
+        {
+            "name": "Roderic Page",
+            "email": "rdmpage@gmail.com"
+        }
+    ],
+    "require": {
+        "symfony/yaml": "^4.4",
+        "ml/json-ld": "^1.2",
+        "endyjasmi/cuid": "2.*",
+        "easyrdf/easyrdf": "^1.1"
+    }
+}
