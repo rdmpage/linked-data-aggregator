@@ -10,6 +10,8 @@
         "symfony/yaml": "^4.4",
         "ml/json-ld": "^1.2",
         "endyjasmi/cuid": "2.*",
-        "easyrdf/easyrdf": "^1.1"
+        "easyrdf/easyrdf": "^1.1",
+        "webonyx/graphql-php": "^14.11",
+        "ext-mbstring": "*"
     }
 }
