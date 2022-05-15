@@ -11,6 +11,10 @@ $config = array();
 $config['sparql_endpoint'] = 'http://65.108.253.35:9999/blazegraph/namespace/kg/sparql';
 $config['hack_uri']	= "http://example.com/";
 
+
+//----------------------------------------------------------------------------------------
+// base JSON-LD context
+
 // JSON-LD context
 $context = new stdclass;
 $context->{'@vocab'} = 'http://schema.org/';
@@ -28,37 +32,6 @@ $url->{'@id'} = "url";
 $url->{'@type'} = "@id";
 $context->url = $url;
 
-// sameAs as set of strings
-$sameAs = new stdclass;
-$sameAs->{'@id'} = "sameAs";
-$sameAs->{'@type'} = "@id";
-$sameAs->{'@container'} = "@set";
-$context->sameAs = $sameAs;
-
-// contentUrl as string
-$contentUrl = new stdclass;
-$contentUrl->{'@id'} = "contentUrl";
-$contentUrl->{'@type'} = "@id";
-$context->contentUrl = $contentUrl;
-
-// thumbnailUrl as string
-$thumbnailUrl = new stdclass;
-$thumbnailUrl->{'@id'} = "thumbnailUrl";
-$thumbnailUrl->{'@type'} = "@id";
-$context->thumbnailUrl = $thumbnailUrl;
-
-// figures always an array
-$figures = new stdclass;
-$figures->{'@id'} = "gql:figures";
-$figures->{'@container'} = "@set";
-$context->{'figures'} = $figures;
-
-// author is always an array
-$author = new stdclass;
-$author->{'@id'} = "author";
-$author->{'@container'} = "@set";
-$context->author = $author;
-
 // identifier is always an array
 $identifier = new stdclass;
 $identifier->{'@id'} = "identifier";
@@ -66,30 +39,85 @@ $identifier->{'@type'} = "@id";
 $identifier->{'@container'} = "@set";
 $context->identifier = $identifier;
 
+
+// sameAs as set of strings
+$sameAs = new stdclass;
+$sameAs->{'@id'} = "sameAs";
+$sameAs->{'@type'} = "@id";
+$sameAs->{'@container'} = "@set";
+$context->sameAs = $sameAs;
+
+// alternateName is an array
+$alternateName = new stdclass;
+$alternateName->{'@id'} = "alternateName";
+$alternateName->{'@container'} = "@set";
+$context->alternateName = $alternateName;
+
+// alternateScientificName is an array
+$alternateScientificName = new stdclass;
+$alternateScientificName->{'@id'} = "alternateScientificName";
+$alternateScientificName->{'@container'} = "@set";
+$context->alternateScientificName = $alternateScientificName;
+
+
+// GraphQL specific fields that have no obvious schema.org equivalent
+$context->titles	= "gql:titles";
+
+
+$config['context'] = $context;
+
+//----------------------------------------------------------------------------------------
+// type-specific contexts
+
+$creativework_context = clone $context;
+
+// contentUrl as string
+$contentUrl = new stdclass;
+$contentUrl->{'@id'} = "contentUrl";
+$contentUrl->{'@type'} = "@id";
+$creativework_context->contentUrl = $contentUrl;
+
+// thumbnailUrl as string
+$thumbnailUrl = new stdclass;
+$thumbnailUrl->{'@id'} = "thumbnailUrl";
+$thumbnailUrl->{'@type'} = "@id";
+$creativework_context->thumbnailUrl = $thumbnailUrl;
+
+// figures always an array
+$figures = new stdclass;
+$figures->{'@id'} = "gql:figures";
+$figures->{'@container'} = "@set";
+$creativework_context->{'figures'} = $figures;
+
+// author is always an array
+$author = new stdclass;
+$author->{'@id'} = "author";
+$author->{'@container'} = "@set";
+$creativework_context->author = $author;
+
 // ISSN is always an array
 $issn = new stdclass;
 $issn->{'@id'} = "issn";
 $issn->{'@container'} = "@set";
-$context->{'issn'} = $issn;
+$creativework_context->{'issn'} = $issn;
 
 // ISBN is always an array
 $isbn = new stdclass;
 $isbn->{'@id'} = "isbn";
 $isbn->{'@container'} = "@set";
-$context->{'isbn'} = $isbn;
+$creativework_context->{'isbn'} = $isbn;
 
 
 // so we can have dois as keys
-$context->bibo = 'http://purl.org/ontology/bibo/';
-$context->doi  = "bibo:doi";	
+$creativework_context->bibo = 'http://purl.org/ontology/bibo/';
+$creativework_context->doi  = "bibo:doi";	
 
 // hack
-//$context->orcid 	= "gql:orcid";	
-//$context->twitter 	= "gql:twitter";
-$context->container = "gql:container";
-$context->titles	= "gql:titles";
+//$creativework_context->container = "gql:container";
 
-$config['context'] = $context;
+
+$config['creativework_context'] = $creativework_context;
+
 
 //----------------------------------------------------------------------------------------
 // SPARQL and Wikidata will often return strings that have language flags so process
@@ -131,7 +159,10 @@ function titles_to_array($value)
 	if (is_object($value))
 	{
 		$title = new stdclass;
-		$title->lang = $value->{"@language"};
+		if (isset($value->{"@language"}))
+		{
+			$title->lang = $value->{"@language"};
+		}
 		$title->title = $value->{"@value"};
 		
 		$strings[] = $title;
@@ -142,9 +173,18 @@ function titles_to_array($value)
 		{
 			foreach ($value as $v)
 			{
-				$title = new stdclass;
-				$title->lang = $v->{"@language"};
-				$title->title = $v->{"@value"};
+				$title = null;
+				if (is_object($v))
+				{
+					$title = new stdclass;
+					$title->lang = $v->{"@language"};
+					$title->title = $v->{"@value"};
+				}
+				else
+				{
+					$title = new stdclass;
+					$title->title = $v;				
+				}
 				
 				$strings[] = $title;
 			}
@@ -197,9 +237,16 @@ function date_to_string($value)
 
 //----------------------------------------------------------------------------------------
 // Query for a single thing
-function one_object_query($args, $sparql)
+// Note that we may need type-specific context (e.g., to ensure something is a string 
+// rather than and array
+function one_object_query($args, $sparql, $context = null)
 {
 	global $config;
+	
+	if ($context == null)
+	{
+		$context = $config['context'];
+	}	
 	
 	// do query
 	$json = get(
@@ -207,7 +254,7 @@ function one_object_query($args, $sparql)
 		'application/ld+json'
 	);
 	
-	$doc = JsonLD::compact($json, json_encode($config['context']));
+	$doc = JsonLD::compact($json, json_encode($context));
 	
 	// print_r($doc);
 	
@@ -236,7 +283,7 @@ function one_object_query($args, $sparql)
 		}
 		
 		$frame = (object)array(
-				'@context' => $config['context'],
+				'@context' => $context,
 				'@type' => $type
 			);
 
@@ -276,9 +323,16 @@ function one_object_query($args, $sparql)
 
 //----------------------------------------------------------------------------------------
 // Query for a list
-function list_object_query($args, $sparql)
+function list_object_query($args, $sparql, $context = null)
 {
 	global $config;
+	
+	global $config;
+	
+	if ($context == null)
+	{
+		$context = $config['context'];
+	}		
 	
 	// do query
 	$json = get(
@@ -288,7 +342,7 @@ function list_object_query($args, $sparql)
 		
 	$doc = JsonLD::compact($json, json_encode($config['context']));
 	
-	// print_r($doc);
+	//print_r($doc);
 	
 	// post process to create a simple list
 	
@@ -323,17 +377,24 @@ function list_object_query($args, $sparql)
 	}
 	else
 	{
-		if (isset($doc->name))
+		if (isset($doc->id))
 		{
-			$doc->name = literals_to_array($doc->name);
-		}	
+			if (isset($doc->name))
+			{
+				$doc->name = literals_to_array($doc->name);
+			}	
 
-		if (isset($doc->titles))
-		{
-			$doc->titles = titles_to_array($doc->titles);
-		}	
+			if (isset($doc->titles))
+			{
+				$doc->titles = titles_to_array($doc->titles);
+			}	
 		
-		$result[] = $doc;
+			$result[] = $doc;
+		}
+		else
+		{
+			$result = null;
+		}
 	}
 	
 	return $result;
@@ -547,7 +608,23 @@ function taxon_query($args)
     ?work schema:datePublished ?datePublished . 
     ?work schema:url ?workUrl . 
     ?work bibo:doi ?doi . 
-	 
+    
+    # synonyms
+    #?item schema:alternateName ?alternateName .
+    ?item schema:alternateScientificName ?alternateScientificName .
+    
+  	?alternateScientificName schema:name ?alternateName .
+  	?alternateScientificName schema:author ?alternateAuthor .
+  	?alternateScientificName schema:isBasedOn ?alternateIsBasedOn .
+    
+    
+    # classification
+    ?item schema:parentTaxon ?parent . 
+    ?parent schema:name ?parentName .
+    
+    ?item schema:childTaxon ?child . 
+    ?child schema:name ?childName .
+   	 
 	}
 	WHERE
 	{
@@ -557,6 +634,7 @@ function taxon_query($args)
 	  
 	  ?item schema:name ?name .
 	  ?item schema:taxonRank ?taxonRank .
+	  FILTER(isLiteral(?taxonRank)) 
 	  
 	  # scientific name
 		?item schema:scientificName ?scientificName .
@@ -590,11 +668,37 @@ function taxon_query($args)
 			  ?identifier schema:propertyID "doi" .
 			  ?identifier schema:value ?doi .
 			}      
-			
-			
-  			
   		}	  
-		FILTER(isLiteral(?taxonRank)) 
+  		
+  		#OPTIONAL
+  		#{
+  		#	?item schema:alternateName ?alternateName .
+  		#}
+
+  		OPTIONAL
+  		{
+  			?item schema:alternateScientificName ?alternateScientificName .
+  			?alternateScientificName schema:name ?alternateName .
+  			OPTIONAL
+  			{
+  				?alternateScientificName schema:author ?alternateAuthor .
+  			}
+  		}
+
+		
+		OPTIONAL
+		{
+    		?item schema:parentTaxon ?parent . 
+    		?parent schema:name ?parentName .
+		}
+		
+		OPTIONAL
+		{
+    		?child schema:parentTaxon ?item . 
+    		?child schema:name ?childName .
+		}
+
+		
 	}   
 	';
 	
@@ -681,7 +785,21 @@ function works_about_query($args)
 	{
 	  VALUES ?subject { <' . $args['id'] . '> }
 	  
-	  ?work schema:about ?subject .
+	  {
+	  	?work schema:about ?subject .
+	  }
+	  UNION
+	  {
+	  	?subject schema:scientificName ?scientificName .
+	  	?scientificName schema:isBasedOn ?work .
+	  }
+	  UNION
+	  {
+	  	?subject schema:alternateScientificName ?alternateScientificName .
+	  	?alternateScientificName schema:isBasedOn ?work .
+	  }
+	  
+	  
 	  ?work rdf:type ?type .
 	  
 		?work schema:name ?title . 	
@@ -720,6 +838,77 @@ function works_about_query($args)
 }	
 
 //----------------------------------------------------------------------------------------
+// List of things a work is about 
+function what_work_is_about_query($args)
+{
+	global $config;
+	
+	$sparql = 'PREFIX schema: <http://schema.org/>
+	PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+	PREFIX gql: <' . $config['hack_uri'] . '>
+
+	CONSTRUCT
+	{
+	 ?subject a ?type . 
+	 ?subject schema:name ?name .
+	 
+	 ?work schema:about ?thing .	 
+	}
+	WHERE
+	{
+	  VALUES ?work { <' . $args['id'] . '> }
+	  
+	  # Note use of sameAs to get link versions together
+	  {
+	  	?work schema:about ?subject .
+	  }
+	  UNION
+	  {
+	    # sameAs realtionship
+	  	?work schema:sameAs|^schema:sameAs ?sameAs .
+	  	?sameAs schema:about ?subject .
+	  }
+
+	  UNION
+	  {
+	  	?subject schema:scientificName ?scientificName .
+	  	?scientificName schema:isBasedOn ?work .
+	  }
+	  UNION
+	  {
+	  	?subject schema:scientificName ?scientificName .
+	  	?scientificName schema:isBasedOn ?sameAs .
+	  	?work schema:sameAs|^schema:sameAs ?sameAs .
+	  }
+ 
+	  UNION
+	  {
+	  	?subject schema:alternateScientificName ?alternateScientificName .
+	  	?alternateScientificName schema:isBasedOn ?work .
+	  }
+	  UNION
+	  {
+	  	?subject schema:alternateScientificName ?alternateScientificName .
+	  	?alternateScientificName schema:isBasedOn ?sameAs .
+	  	?work schema:sameAs|^schema:sameAs ?sameAs .
+	  }
+	  
+	  ?subject rdf:type ?type .
+	  ?subject schema:name ?name . 	
+		
+	} 
+	';
+	
+	//echo $sparql;
+	
+	$doc = list_object_query($args, $sparql);
+
+	return $doc;	
+
+}	
+
+
+//----------------------------------------------------------------------------------------
 // List of works for a creator
 function person_works_query($args)
 {
@@ -750,7 +939,11 @@ function person_works_query($args)
 	  ?work schema:creator ?person .
 	  ?work rdf:type ?type .
 	  
-		?work schema:name ?title . 	
+	  OPTIONAL
+		{
+		?work schema:name ?title . 
+		}
+			
 		OPTIONAL
 		{
 			?work schema:datePublished ?datePublished .
@@ -830,9 +1023,8 @@ function image_query($args)
 	} 
 	';
 	
-	//echo $sparql;
 	
-	$doc = one_object_query($args, $sparql);
+	$doc = one_object_query($args, $sparql, $config['creativework_context']);
 	
 	if (isset($doc->name))
 	{
@@ -963,7 +1155,7 @@ function work_query($args)
 	
 	//echo $sparql;
 	
-	$doc = one_object_query($args, $sparql);
+	$doc = one_object_query($args, $sparql, $config['creativework_context']);
 	
 	if (isset($doc->datePublished))
 	{
@@ -1072,11 +1264,11 @@ if (0)
 		$result = thing_query($args);
 	}
 	
-	if (0)
+	if (1)
 	{
 		// taxon
 		$args = array(
-			'id' => 'https://www.catalogueoflife.org/data/taxon/7NN8R' 
+			'id' => 'https://www.catalogueoflife.org/data/taxon/46Q44' 
 		);	
 		$result = taxon_query($args);
 	}
@@ -1085,9 +1277,9 @@ if (0)
 	{
 		// works about something
 		$args = array(
-			'id' => 'https://www.catalogueoflife.org/data/taxon/7NN8R' 
+			'id' => 'https://www.catalogueoflife.org/data/taxon/7PVTH' 
 		);	
-		$result = works_about($args);
+		$result = works_about_query($args);
 	}
 	
 	if (0)
@@ -1104,12 +1296,22 @@ if (0)
 		// work
 		$args = array(
 //			'id' => 'https://doi.org/10.5852/ejt.2020.629' 
-			'id' => 'https://doi.org/10.3897/zookeys.921.49199',
+			//'id' => 'https://doi.org/10.3897/zookeys.921.49199',
+			'id' => 'https://doi.org/10.1080/03036758.2017.1287101',
 		);	
 		$result = work_query($args);
 	}
 	
-	if (1)
+	if (0)
+	{
+		// things works is about 
+		$args = array(
+			'id' => 'https://doi.org/10.1080/03036758.2017.1287101' 
+		);	
+		$result = what_work_is_about_query($args);
+	}	
+	
+	if (0)
 	{
 		// person
 		$args = array(
@@ -1117,6 +1319,16 @@ if (0)
 		);	
 		$result = person_query($args);
 	}
+	
+	if (0)
+	{
+		// works by person
+		$args = array(
+			'id' => 'https://orcid.org/0000-0001-7047-4680' 
+		);	
+		$result = person_works_query($args);
+	}	
+	
 	
 	
 	print_r($result);

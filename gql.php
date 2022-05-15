@@ -289,23 +289,16 @@ class WorkType extends ObjectType
                         'type' => Type::string(),
                         'description' => "License under which content is made available."
                     ],   
-                                                                         
-                
-                    'publicationYear' => [
-                        'type' => Type::int(),
-                        'description' => "The year when the publication was made available."
-                    ], 
-                    
-                    'publishedNames' => [
-                        'type' => Type::listOf(TypeRegister::taxonNameType()),
-                        'description' => "Taxonomic names published.",
+					*/
+					                    
+                    'about' => [
+                        'type' => Type::listOf(TypeRegister::thingType()),
+                        'description' => "Things this work is about",
                         'resolve' => function($thing) {
-                    		//return publication_taxonomic_names_gql(array('id' => $thing->id));
-							$q = new PublicationTaxonNamesResolver(array('id' => $thing->id));
-							return $q->do();
-								}
+                    		return what_work_is_about_query(array('id' => $thing->id));
+                    	}
                     ],      
-                    */                                   
+                                                     
                     
                     'titles' => [
                         'type' => Type::listOf(TypeRegister::titleType()),
@@ -514,6 +507,29 @@ class TaxonType extends ObjectType
              			}
                     ],    
                     
+                    
+                    'parentTaxon' => [
+                        'type' => TypeRegister::TaxonType(),
+                        'description' => 'Parent of this taxon'
+                    ],                    
+                    
+                    
+                   'childTaxon' => [
+                        'type' =>Type::listOf(TypeRegister::TaxonType()),
+                        'description' => "Children of this taxon"
+                    ],    
+                    
+                   /*
+                    'alternateName' => [
+                        'type' =>Type::listOf(Type::string()),
+                        'description' => "Synonym as simple string",
+                    ], 
+                    */                   
+                     
+                    'alternateScientificName' => [
+                        'type' =>Type::listOf(TypeRegister::TaxonNameType()),
+                        'description' => "Synonym as taxonomic name",
+                    ],                    
                      
 /*                    
                     'hasSynonym' => [
@@ -535,25 +551,7 @@ class TaxonType extends ObjectType
                         'description' => "The parent taxon of the current taxon within this classification"
                     ],
                     
-                    'publications' => [
-                         'type' =>Type::listOf(TypeRegister::publicationType()),
-                        'description' => "Publications on this taxon",
-
-						// MAGIC! Fuck knows why, but this works. Thing (can be called anything)
-						//   is the object returned by the GQL query (in this case taxon name), 
-						//   so we just use id as a parameter to get publications for the name.
-						
-            			'resolve' => function($thing) {
-            			
- 							if ($thing && isset($thing->id))
-            			    {
-                    			$q = new TaxonPublicationsResolver(array('id' => $thing->id));
-                    			return $q->do();
-                    		}            			
-            			
-                    		//return taxon_publications_gql(array('id' => $thing->id));
-            			}
-                    ],    */
+   */
                     
                    
                    
@@ -568,7 +566,7 @@ class TaxonType extends ObjectType
 }
 
 //----------------------------------------------------------------------------------------
-// based on DataCite GraphQL
+// based on DataCite GraphQL, one way to support multilingual titles
 class TitleType extends ObjectType
 {
 

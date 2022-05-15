@@ -260,6 +260,21 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
         #url
       }
     }
+    
+    alternateScientificName {
+    	name
+    	author
+    }
+    
+   parentTaxon {
+      id
+      name
+    }
+    
+   childTaxon {
+      id
+      name
+    }    
 
     references {
       id
@@ -285,6 +300,53 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 				
 				html += '<h2>' + response.data.taxon.name + '</h2>';
 				
+				// synonyms
+				if (response.data.taxon.alternateScientificName) {
+					html += '<h3>Synonyms</h3>';
+					html += '<ul>';					
+					for (var j in response.data.taxon.alternateScientificName) {		
+						html += '<li>';	
+						if (response.data.taxon.alternateScientificName[j].name) {
+							html += response.data.taxon.alternateScientificName[j].name;							
+						}
+						if (response.data.taxon.alternateScientificName[j].author) {
+							html += ' ' + response.data.taxon.alternateScientificName[j].author;							
+						}											
+						html += '</li>';						
+					}
+					html += '</ul>';
+				}
+				
+				
+				// classification
+				
+				// parent
+				if (response.data.taxon.parentTaxon) {
+					html += '<p>';
+					html += '<a href="./?id=' + response.data.taxon.parentTaxon.id + '">' + response.data.taxon.parentTaxon.name + '</a>';						
+				}
+				
+				html += '<ul>';					
+				html += '<li>';
+				html += response.data.taxon.name + '</a>';
+				
+				// childen	
+				if (response.data.taxon.childTaxon) {
+					html += '<ul>';					
+					for (var j in response.data.taxon.childTaxon) {		
+						html += '<li>';						
+						html += '<a href="./?id=' + response.data.taxon.childTaxon[j].id + '">' + response.data.taxon.childTaxon[j].name + '</a>';	
+						html += '</li>';						
+					}
+					html += '</ul>';
+				}
+				html += '</li>';
+				html += '</ul>';
+				if (response.data.taxon.parentTaxon) {
+					html += '</p>';
+				}
+							
+				
 				
 				// list of references
 				if (response.data.taxon.references) {
@@ -307,8 +369,17 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 		html += '<ul>';
 		for (var i in works) {
 			html += '<li>';
-			html += '<a href="./?id=' + works[i].id + '">' + get_title(works[i].titles) + '</a>';
 			
+			// not verything in list may have a URI
+			if (works[i].id.match(/^(http|urn)/)) {
+				html += '<a href="./?id=' + works[i].id + '">';
+			}
+			
+			html += get_title(works[i].titles);
+			
+			if (works[i].id.match(/^(http|urn)/)) {
+				html += '</a>';
+			}			
 			
 			// DOI?
 			if(works[i].doi) {
@@ -437,6 +508,11 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
       caption
     }    
     
+    about {
+    	id
+    	name
+    }
+    
     #subjectOf {
     #  id
     #  doi
@@ -487,6 +563,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 				
 				html += '</h2>';
 				
+				// authors
 				if (response.data.work.author) {
 					html += '<div>';
 					
@@ -519,6 +596,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 
 				}
 				
+				// to do
 				if (response.data.work.container) {
 					if (response.data.work.container.id) {
 						html += '<div style="padding-top:1em;">';
@@ -534,8 +612,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 				
 				}
 				
-								
-				
+				// DOI							
 				if (response.data.work.doi) {
 					html += '<br><span class="doi"><a href="https://doi.org/' + response.data.work.doi + '" target="_new">' + response.data.work.doi + '</a></span>';					
 				}
@@ -549,8 +626,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 					html += '</span>';
 				}
 
-
-				
+				// figures				
 				if (response.data.work.figures) {
 					html += '<h3>Figures</h3>';
 					html += '<div class="figures">';
@@ -564,6 +640,20 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 					}
 					
 					html += '</div>';
+				}
+				
+				// what is work about?				
+				if (response.data.work.about) {
+					html += '<h3>Work is about</h3>';
+					html += '<ul>';
+					for (var i in response.data.work.about) {
+						html += '<li>';
+						html += '<a href="./?id=' + response.data.work.about[i].id + '">';
+						html += response.data.work.about[i].name;
+						html += '</a>';
+						html += '</li>';
+					}
+					html += '</ul>';
 				}
 				
 				
