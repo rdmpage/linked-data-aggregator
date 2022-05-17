@@ -63,6 +63,8 @@ default_graph:   default
 
 ## Queries
 
+### Named graphs
+
 Note that we will need to make use of named graphs in our queries, e.g.:
 
 ```
@@ -89,3 +91,25 @@ Note the `FROM <https://species.wikimedia.org>` clause before `WHERE`.
 
 However, `DESCRIBE` doesn’t need a named graph(!)
 
+### Exploratory queries
+
+#### Types in a dataset
+
+#### Literals in a dataset
+
+A query like this tells us what sort of values we have in the dataset.
+
+```
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/>
+SELECT ?p (COUNT(?p) AS ?count) 
+FROM <https://orcid.org>
+WHERE {
+  ?s rdf:type schema:Person .
+  ?s ?p ?o .
+  FILTER isLiteral(?o)
+} 
+GROUP BY ?p
+ORDER BY DESC(?count)
+```

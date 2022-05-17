@@ -17,7 +17,11 @@ $sources = array(
 	
 	//'uniprot.yaml'
 	
-	'col.yaml'
+	//'col.yaml'
+	
+	//'zenodo.yaml'
+	
+	'glue.yaml'
 );
 
 
@@ -32,7 +36,10 @@ foreach ($sources as $source_filename)
 	
 	echo "Adding data for " . $source->name . "\n";
 	
-	if (0)
+	
+	// We can either just add to existing data, or wipe previous namespace clean
+	// and start again
+	if (1)
 	{
 		// clean up any previous upload
 		remove_source($triplestore, $source);

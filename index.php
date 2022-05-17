@@ -21,18 +21,22 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 		padding:2em;
 		font-family:sans-serif;
 	}
+	
 	li {
-		padding:0.5em;
+		padding:0.1em;
+		font-size: 0.8em;
 	}
 	
 	details {
-		padding:1em;
 		border:1px solid rgb(192,192,192);
 		margin-bottom: 1em;
 	}
 	
 	summary {
+	    padding:0.5em;
 		outline-style: none; 
+		background:green;
+		color:white;
 	}	
 	
 	
@@ -47,6 +51,10 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	a {
 		text-decoration: none;
 	}
+	
+	a:hover {
+		text-decoration: underline;
+	}	
 	
 	span.doi {
 		text-decoration: underline;
@@ -63,7 +71,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	}
 	
 	.figures {
-		background: rgb(224,224,224);
+		/*background: rgb(224,224,224);*/
 		display: block;
 		overflow: auto;
 	}
@@ -110,7 +118,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	<h1>Linked Data Aggregator Browser</h1>
 	
 	<div>
-		<input type="text" id="id" value="" placeholder="https://doi.org/10.5852/ejt.2020.629">
+		<input type="text" id="id" value="" size="60" placeholder="https://doi.org/10.5852/ejt.2020.629">
 		<button id="go" onclick="go();">Go</button>
 	</div>
 	
@@ -120,7 +128,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	
 	
 	
-	
+	<!--
 	<h3>Examples</h3>
 	<div>		
 		<li><a href="./?id=https://doi.org/10.5852/ejt.2020.629">Revision of the aperturally dentate Charopidae (Gastropoda: Stylommatophora) of southern Africa - genus Afrodonta s. lat., with description of five new genera, twelve new species and one new subspecies</a></li>
@@ -129,6 +137,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	</div>
 
 	<hr/>
+	-->
 
 	<div id="output"></div>
 	
@@ -204,11 +213,23 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 						have_type = true;
 						image(id);
 					}
+					
+					if (!have_type && response.data.thing.type.indexOf('TaxonName') !== -1) {
+						$("#output").html("<progress></progress>");
+						have_type = true;
+						taxon_name(id);
+					}					
 
 					if (!have_type && response.data.thing.type.indexOf('Taxon') !== -1) {
 						$("#output").html("<progress></progress>");
 						have_type = true;
 						taxon(id);
+					}
+
+					if (!have_type && response.data.thing.type.indexOf('Organization') !== -1) {
+						$("#output").html("<progress></progress>");
+						have_type = true;
+						organisation(id);
 					}
 					
 					
@@ -226,6 +247,9 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 						person(id);
 					}
 					
+					// types we will need to add:
+					/// https://doi.org/10.3897/dez.65.21000.suppl1 is <http://schema.org/Dataset>
+					
 					if (!have_type) {
 						alert("Unknown type |" + response.data.thing.type + '|');					
 					}
@@ -234,7 +258,53 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 
 		);
 	
-	}		
+	}
+	
+        //--------------------------------------------------------------------------------
+		function taxon_name (id) {
+	
+			var data = {};
+			data.query = `query{
+  taxonName(id: "` + id + `") {
+    id
+    name
+    
+    isBasedOn {
+      id
+      titles {
+        title
+      }
+      doi
+    }    
+  }
+}`;
+
+		data.variables = {};
+		
+		$.post(
+			'gql.php', 
+			JSON.stringify(data), 
+			function(response){ 
+				//alert(JSON.stringify(response, null, 2));
+				var html = '';
+				
+				if (response.data.taxonName.name) {
+					html += '<h2>' + response.data.taxonName.name + '</h2>';				
+				}
+
+				// published in
+				if (response.data.taxonName.isBasedOn) {
+					html += '<h3>References</h3>';
+					html += work_list_to_html(response.data.taxonName.isBasedOn);
+				}
+		
+				//alert(JSON.stringify(response, null, 2));
+				//alert("success");
+				$("#output").html(html);
+				}
+		);
+	
+	}				
 		
         //--------------------------------------------------------------------------------
 		function taxon (id) {
@@ -402,6 +472,30 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 		return html;
 	}
 	
+        //--------------------------------------------------------------------------------
+	function name_list_to_html(list) {
+		var html = '';
+		html += '<ul>';
+		for (var i in list) {
+			html += '<li>';
+			
+			// not verything in list may have a URI
+			if (list[i].id.match(/^(http|urn)/)) {
+				html += '<a href="./?id=' + list[i].id + '">';
+			}
+			
+			html += list[i].name.join(' / ');
+			
+			if (list[i].id.match(/^(http|urn)/)) {
+				html += '</a>';
+			}			
+			
+			html += '</li>';
+		}			
+		html += '</ul>';				
+		
+		return html;
+	}
 	
 		
         //--------------------------------------------------------------------------------
@@ -416,6 +510,13 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 		givenName
 		familyName
 		
+		alternateName
+		
+	   affiliation {
+		  id
+		  name
+		}	
+		
 		works {
 		  id
 		  titles {
@@ -423,6 +524,11 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 		  }
 		  doi
 		}
+		
+    scientificNames {
+      id
+      name
+    }		
 		
 	  }
 	}`;
@@ -440,7 +546,8 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 				
 				//html += '<h2>' + response.data.person.name[0] + '</h2>';
 				html += '<h2>' + response.data.person.name + '</h2>';
-				
+								
+				// ORCID?
 				if (response.data.person.orcid) {
 					html += '<div><img src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png">';
 					html += '&nbsp;<a href="https://orcid.org/' + response.data.person.orcid + '" target="_new">';
@@ -449,9 +556,46 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 					html += '</div>';
 				}
 				
+				html += '<h3>Activities</h3>';
+				
+				// other names
+				if (response.data.person.alternateName) {
+					html += '<div>';
+					for (var i in response.data.person.alternateName) {
+						html += response.data.person.alternateName[i] + ' ';
+					}
+					html += '</div>';
+				}			
+				
+				// affiliation	
+				if (response.data.person.affiliation) {
+					html += '<details>';				
+					html += '<summary>Employment (' + response.data.person.affiliation.length + ')</summary>';
+					
+					html += '<ul>';
+					for (var i in response.data.person.affiliation) {
+						html += '<li>';
+						html += response.data.person.affiliation[i].name[0]; // hack
+						html += '</li>';
+					}
+					html += '</ul>';
+					html += '</details>';
+				}
+				
+				// works
 				if (response.data.person.works) {
-					html += '<h3>References</h3>';
+					html += '<details>';				
+					html += '<summary>Works (' + response.data.person.works.length + ')</summary>';
 					html += work_list_to_html(response.data.person.works);
+					html += '</details>';
+				}
+				
+				// scientific names 
+				if (response.data.person.scientificNames) {
+					html += '<details>';				
+					html += '<summary>Taxon names (' + response.data.person.scientificNames.length + ')</summary>';
+					html += name_list_to_html(response.data.person.scientificNames);
+					html += '</details>';
 				}
 		
 				//alert(JSON.stringify(response, null, 2));
@@ -513,29 +657,26 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
     	name
     }
     
-    #subjectOf {
-    #  id
-    #  doi
-    #	titles {
-    #		title
-    #	}
-    #}
+    scientificNames {
+      id
+      name
+    }      
+ 
+    cites {
+      id
+      doi
+    	titles {
+    		title
+    	}
+    }
 
-    #cites {
-    #  id
-    #  doi
-    #	titles {
-    #		title
-    #	}
-    #}
-
-    #cited_by {
-    #  id
-    #  doi
-   # 	titles {
-    #		title
-    #	}
-    #}
+    cited_by {
+      id
+      doi
+    	titles {
+    		title
+    	}
+    }
 
     #related {
     #  id
@@ -634,13 +775,26 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 					for (var i in response.data.work.figures) {
 						if (response.data.work.figures[i].thumbnailUrl) {
 						    html += '<a href="./?id=' + response.data.work.figures[i].id + '">';
-							html += '<img class="figure" src="https://aipbvczbup.cloudimg.io/s/height/50/' + response.data.work.figures[i].thumbnailUrl + '">';
+							html += '<img class="figure" src="https://aipbvczbup.cloudimg.io/s/height/80/' + response.data.work.figures[i].thumbnailUrl + '">';
 							html += '</a>';
 						}
 					}
 					
 					html += '</div>';
 				}
+				
+				// literature cited
+				if (response.data.work.cites) {
+					html += '<h3>Cites</h3>';
+					html += work_list_to_html(response.data.work.cites);
+				}
+
+				// citing
+				if (response.data.work.cited_by) {
+					html += '<h3>Cited by</h3>';
+					html += work_list_to_html(response.data.work.cited_by);
+				}
+				
 				
 				// what is work about?				
 				if (response.data.work.about) {
@@ -655,6 +809,14 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 					}
 					html += '</ul>';
 				}
+				
+				
+				// scientific names 
+				if (response.data.work.scientificNames) {
+					html += '<h3>Taxon names</h3>';
+					html += name_list_to_html(response.data.work.scientificNames);
+				}
+				
 				
 				
 				/*
@@ -769,6 +931,68 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 		);
 	
 	}	
+	
+		
+        //--------------------------------------------------------------------------------
+		function organisation (id) {
+	
+			var data = {};
+			data.query = `query{
+	  organisation(id: "` + id + `"){
+		id
+		name
+		alternateName
+		ringgold
+		ror
+	  }
+	}`;
+
+
+
+		data.variables = {};
+		
+		$.post(
+			'gql.php', 
+			JSON.stringify(data), 
+			function(response){ 
+				//alert(JSON.stringify(response, null, 2));
+				var html = '';
+				
+				//html += '<h2>' + response.data.person.name[0] + '</h2>';
+				html += '<h2>' + response.data.organisation.name + '</h2>';
+				
+				if (response.data.organisation.ror) {
+					html += '<div>' + response.data.organisation.ror + '</div>';
+				}
+				if (response.data.organisation.ringgold) {
+					html += '<div>' + response.data.organisation.ringgold + '</div>';
+				}
+				
+				
+				/*
+					html += '<div><img src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png">';
+					html += '&nbsp;<a href="https://orcid.org/' + response.data.person.orcid + '" target="_new">';
+					html += 'https://orcid.org/' + response.data.person.orcid;
+					html += '</a>';
+					html += '</div>';
+					*/
+				
+				
+				/*
+				if (response.data.person.works) {
+					html += '<h3>References</h3>';
+					html += work_list_to_html(response.data.person.works);
+				}
+				*/
+		
+				//alert(JSON.stringify(response, null, 2));
+				//alert("success");
+				$("#output").html(html);
+				}
+		);
+	
+	}
+	
 	
 		
         //--------------------------------------------------------------------------------

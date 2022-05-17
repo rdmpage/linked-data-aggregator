@@ -76,6 +76,61 @@ class ThingType extends ObjectType
 }
 
 //----------------------------------------------------------------------------------------
+class OrganisationType extends ObjectType
+{
+
+    public function __construct()
+    {
+        error_log('OrganisationType');
+        $config = [
+			'description' =>  "An organisation",
+            'fields' => function(){
+                return [
+                     
+                    'id' => [
+                        'type' => Type::string(),
+                        'description' => "Id of thing"
+                    ],   
+                                     
+                    'name' => [
+                        'type' => Type::string(),
+                        'description' => "Name of the thing."
+                    ],      
+                    
+                                     
+                    'alternateName' => [
+                        'type' => Type::listOf(Type::string()),
+                        'description' => "Other name(s) of the thing."
+                    ],    
+                    
+                                     
+                    'ringgold' => [
+                        'type' => Type::string(),
+                        'description' => "RINGGOLD number"
+                    ],                                      
+
+                    'ror' => [
+                        'type' => Type::string(),
+                        'description' => "ROR identifier"
+                    ],                                                                                            
+                    
+                   'type' => [
+                        'type' => Type::listOf(Type::string()),
+                        'description' => "Type(s) of thing"
+                    ],
+                                
+                                                       
+                    ];
+            }                    
+			      
+       ];
+        parent::__construct($config);
+
+    }
+
+}
+
+//----------------------------------------------------------------------------------------
 class ImageType extends ObjectType
 {
 
@@ -136,6 +191,41 @@ class ImageType extends ObjectType
     }
 
 }
+
+//----------------------------------------------------------------------------------------
+// Simple thing in a list
+class ThingListType extends ObjectType
+{
+
+    public function __construct()
+    {
+        error_log('ThingListType');
+        $config = [
+			'description' =>  "Simplified thing to include in lists.",
+            'fields' => function(){
+                return [
+                     
+                    'id' => [
+                        'type' => Type::string(),
+                        'description' => "Id of work"
+                    ],  
+                    
+                    'name' => [
+                        'type' => Type::listOf(Type::string()),
+                        'description' => "Name of the thing."
+                    ]            
+                     
+                                                       
+                    ];
+            }                    
+			      
+       ];
+        parent::__construct($config);
+
+    }
+
+}
+
 
 
 //----------------------------------------------------------------------------------------
@@ -297,8 +387,15 @@ class WorkType extends ObjectType
                         'resolve' => function($thing) {
                     		return what_work_is_about_query(array('id' => $thing->id));
                     	}
-                    ],      
-                                                     
+                    ],     
+                    
+                    'scientificNames' => [
+                        'type' => Type::listOf(TypeRegister::TaxonNameType()),
+                        'description' => "Taxonomic names published in this work",
+            			'resolve' => function($thing) {
+                    		return work_scientific_names_query(array('id' => $thing->id));
+            			}                        
+                     ],                                                                                
                     
                     'titles' => [
                         'type' => Type::listOf(TypeRegister::titleType()),
@@ -311,7 +408,30 @@ class WorkType extends ObjectType
                     ],
                     
                     
-                  
+                   'cites' => [
+                        'type' =>Type::listOf(TypeRegister::SimpleWorkType()),
+                        'description' => "Works this work cites",
+            			'resolve' => function($thing) {
+            			
+ 							if ($thing && isset($thing->id))
+            			    {
+                    			return work_cites(array('id' => $thing->id));
+                    		}            			
+             			}
+                    ],    
+                    
+                   'cited_by' => [
+                        'type' =>Type::listOf(TypeRegister::SimpleWorkType()),
+                        'description' => "Works citing this work",
+            			'resolve' => function($thing) {
+            			
+ 							if ($thing && isset($thing->id))
+            			    {
+                    			return work_cited_by(array('id' => $thing->id));
+                    		}            			
+             			}
+                    ],    
+                   
                     ];
             }                    
 			      
@@ -364,6 +484,11 @@ class PersonType extends ObjectType
                         'type' => Type::string(),
                         'description' => "The name of the person."
                     ],
+                    
+                    'alternateName' => [
+                        'type' => Type::listOf(Type::string()),
+                        'description' => "Other name(s) of the person."
+                    ],                     
                      
                     'works' => [
                         'type' =>Type::listOf(TypeRegister::workType()),
@@ -373,19 +498,32 @@ class PersonType extends ObjectType
             			}
                     ],    
                     
-                    /*
-                    'publishedNames' => [
+                    'affiliation' => [
+                        'type' =>Type::listOf(TypeRegister::thingListType()),
+                        'description' => "Afilliation",
+            			'resolve' => function($thing) {
+                    		return person_affiliation_query(array('id' => $thing->id));
+            			}
+                    ],                        
+  
+                    'affiliation' => [
+                        'type' =>Type::listOf(TypeRegister::thingListType()),
+                        'description' => "Afilliation",
+            			'resolve' => function($thing) {
+                    		return person_affiliation_query(array('id' => $thing->id));
+            			}
+                    ],                        
+                  
+                
+                    'scientificNames' => [
                         'type' => Type::listOf(TypeRegister::taxonNameType()),
-                        'description' => "Taxonomic names published.",
+                        'description' => "Scientific names in publications.",
                         'resolve' => function($thing) {
-                    		//return person_taxonNames_gql(array('id' => $thing->id));
-                    		
-                    		$q = new PersonTaxonNamesResolver(array('id' => $thing->id));
-                    		return $q->do();
-                    		
+                    		return person_scientific_names_query(array('id' => $thing->id));           	
                     	}
                     ],        
                     
+                    /*
                     'thumbnailUrl' => [
                         'type' => Type::string(),
                         'description' => "URL to a thumbnail view of the image."
@@ -421,7 +559,7 @@ class TaxonNameType extends ObjectType
                     ],                              
                     
                     'name' => [
-                        'type' => Type::string(),
+                        'type' => Type::listOf(Type::string()),
                         'description' => "The taxonomic name"
                     ],
 
@@ -431,10 +569,14 @@ class TaxonNameType extends ObjectType
                     ],
                  
                     'isBasedOn' => [
-                        'type' => TypeRegister::simpleWorkType(),
+                        'type' => Type::listOf(TypeRegister::simpleWorkType()),
                         'description' => "publication that established this name",
+            			'resolve' => function($thing) {
+                    		return taxon_name_works_query(array('id' => $thing->id));
+            			}
+                        
                      ],      
-                     
+                      
                      /*
                     'rankString' => [
                         'type' => Type::string(),
@@ -612,6 +754,10 @@ class TypeRegister {
 	private static $workType;
 	
 	private static $imageType;	
+
+	private static $organisationType;	
+	
+	private static $thingListType;
 		    
     // thing
     public static function thingType(){
@@ -628,7 +774,7 @@ class TypeRegister {
         return self::$simpleWorkType ?: (self::$simpleWorkType = new SimpleWorkType());
     }    
     
-    // an person
+    // a person
     public static function personType(){
         return self::$personType ?: (self::$personType = new PersonType());
     }     
@@ -637,6 +783,17 @@ class TypeRegister {
     public static function workType(){
         return self::$workType ?: (self::$workType = new WorkType());
     }      
+      
+    // organisation
+    public static function organisationType(){
+        return self::$organisationType ?: (self::$organisationType = new OrganisationType());
+    }  
+    
+    // thing in a list
+    public static function thingListType(){
+        return self::$thingListType ?: (self::$thingListType = new ThingListType());
+    }  
+    
       
 
     // taxon name AKA scientific name
@@ -729,7 +886,7 @@ $schema = new Schema([
                     ]
                 ],
                 'resolve' => function($rootValue, $args, $context, $info) {
-                    return taxonName_query($args);
+                    return taxon_name_query($args);
                 }
             ], 
             
@@ -761,6 +918,19 @@ $schema = new Schema([
                 }
             ], 
             
+           'organisation' => [
+                'type' => TypeRegister::organisationType(),
+                'description' => 'Returns an organisation',
+                'args' => [
+                    'id' => [
+                        'type' => Type::string(),
+                        'description' => 'Identifier for organisation'
+                    ]
+                ],
+                'resolve' => function($rootValue, $args, $context, $info) {
+                    return organisation_query($args);
+                }
+            ],  
              
             
  

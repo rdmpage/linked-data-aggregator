@@ -59,9 +59,27 @@ $alternateScientificName->{'@id'} = "alternateScientificName";
 $alternateScientificName->{'@container'} = "@set";
 $context->alternateScientificName = $alternateScientificName;
 
+// affiliation is an array
+$affiliation = new stdclass;
+$affiliation->{'@id'} = "affiliation";
+$affiliation->{'@container'} = "@set";
+$context->affiliation = $affiliation;
+
+// isBasedOn is an array
+$isBasedOn = new stdclass;
+$isBasedOn->{'@id'} = "isBasedOn";
+$isBasedOn->{'@container'} = "@set";
+$context->isBasedOn = $isBasedOn;
 
 // GraphQL specific fields that have no obvious schema.org equivalent
-$context->titles	= "gql:titles";
+
+$context->ringgold	= "gql:ringgold";
+$context->ror		= "gql:ror";
+$context->titles		= "gql:titles";
+
+// so we can have dois as keys
+$context->bibo = 'http://purl.org/ontology/bibo/';
+$context->doi  = "bibo:doi";	
 
 
 $config['context'] = $context;
@@ -108,9 +126,6 @@ $isbn->{'@container'} = "@set";
 $creativework_context->{'isbn'} = $isbn;
 
 
-// so we can have dois as keys
-$creativework_context->bibo = 'http://purl.org/ontology/bibo/';
-$creativework_context->doi  = "bibo:doi";	
 
 // hack
 //$creativework_context->container = "gql:container";
@@ -136,7 +151,14 @@ function literals_to_array($value)
 		{
 			foreach ($value as $v)
 			{
-				$strings[] = $v->{"@value"};
+				if (isset($v->{"@value"}))
+				{
+					$strings[] = $v->{"@value"};
+				}
+				else
+				{
+					$strings[] = $v;
+				}
 			}
 		
 			$strings = array_unique($strings);
@@ -473,6 +495,10 @@ function thing_query($args)
 				$schema_types[] = 'ImageObject';
 				break;
 				
+			case 'Organization':
+				$schema_types[] = 'Organization';
+				break;								
+				
 			case 'Person':
 				$schema_types[] = 'Person';
 				break;				
@@ -512,6 +538,7 @@ function taxon_name_query($args)
 	
 	$sparql = 'PREFIX schema: <http://schema.org/>
 	PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+	PREFIX bibo: <http://purl.org/ontology/bibo/>
 	PREFIX gql: <' . $config['hack_uri'] . '>
 
 	CONSTRUCT
@@ -519,7 +546,12 @@ function taxon_name_query($args)
 	 ?item rdf:type ?type . 
 
 	 ?item schema:name ?name .
-	 ?item schema:description ?description .
+	 
+	  ?item schema:isBasedOn ?work .
+	  ?work gql:titles ?title .
+	  ?work bibo:doi ?doi .
+	 
+	 
 	}
 	WHERE
 	{
@@ -528,15 +560,25 @@ function taxon_name_query($args)
 	  ?item rdf:type ?type .
 	  
 	  ?item schema:name ?name .
-	  
+	  	  
 	  OPTIONAL
 	  {
-	  	?item schema:description ?description .
+	  	?item schema:isBasedOn ?work .
+	  	?work schema:name ?title
+	  	
+		OPTIONAL
+		{
+		  ?work schema:identifier ?identifier .
+          ?identifier schema:propertyID "doi" .
+          ?identifier schema:value ?doi .
+		}   	
+	  	
 	  }
+	  
 
 	}   
 	';
-	
+
 	//echo $sparql;
 	
 	$doc = one_object_query($args, $sparql);
@@ -907,6 +949,125 @@ function what_work_is_about_query($args)
 
 }	
 
+//----------------------------------------------------------------------------------------
+// Citations by a work
+// Need to think about how we handle sameAs clusters
+function work_cites($args)
+{
+	global $config;
+	
+	$sparql = 'PREFIX schema: <http://schema.org/>
+	PREFIX bibo: <http://purl.org/ontology/bibo/>
+	PREFIX gql: <' . $config['hack_uri'] . '>
+
+	CONSTRUCT
+	{
+	 ?work a ?type . 
+
+	 ?work gql:titles ?title .
+	 ?work schema:datePublished ?datePublished .
+
+	 ?work bibo:doi ?doi .
+	 ?work schema:url ?url .
+	 
+	 ?work schema:sameAs ?sameAs .	 
+	}
+	WHERE
+	{
+	  VALUES ?this { <' . $args['id'] . '> }
+	  
+	  ?this schema:citation ?work .
+	  ?work rdf:type ?type .
+	  
+		?work schema:name ?title . 	
+		OPTIONAL
+		{
+			?work schema:datePublished ?datePublished .
+		}
+		OPTIONAL
+		{
+			?work schema:url ?url . 
+		}
+		OPTIONAL
+		{
+		  ?work schema:identifier ?identifier .
+          ?identifier schema:propertyID "doi" .
+          ?identifier schema:value ?doi .
+		}   
+		
+
+		
+	} 
+	';
+	
+	//echo $sparql;
+	
+	$doc = list_object_query($args, $sparql);
+
+	return $doc;	
+
+}	
+
+//----------------------------------------------------------------------------------------
+// Citations by a work
+// Need to think about how we handle sameAs clusters
+function work_cited_by($args)
+{
+	global $config;
+	
+	$sparql = 'PREFIX schema: <http://schema.org/>
+	PREFIX bibo: <http://purl.org/ontology/bibo/>
+	PREFIX gql: <' . $config['hack_uri'] . '>
+
+	CONSTRUCT
+	{
+	 ?work a ?type . 
+
+	 ?work gql:titles ?title .
+	 ?work schema:datePublished ?datePublished .
+
+	 ?work bibo:doi ?doi .
+	 ?work schema:url ?url .
+	 
+	 ?work schema:sameAs ?sameAs .	 
+	}
+	WHERE
+	{
+	  VALUES ?this { <' . $args['id'] . '> }
+	  
+	  ?work schema:citation ?this .
+	  ?work rdf:type ?type .
+	  
+		?work schema:name ?title . 	
+		OPTIONAL
+		{
+			?work schema:datePublished ?datePublished .
+		}
+		OPTIONAL
+		{
+			?work schema:url ?url . 
+		}
+		OPTIONAL
+		{
+		  ?work schema:identifier ?identifier .
+          ?identifier schema:propertyID "doi" .
+          ?identifier schema:value ?doi .
+		}   
+		
+
+		
+	} 
+	';
+	
+	//echo $sparql;
+	
+	$doc = list_object_query($args, $sparql);
+
+	return $doc;	
+
+}	
+
+
 
 //----------------------------------------------------------------------------------------
 // List of works for a creator
@@ -967,6 +1128,186 @@ function person_works_query($args)
 		
 
 		
+	} 
+	';
+	
+	//echo $sparql;
+	
+	$doc = list_object_query($args, $sparql);
+
+	return $doc;	
+
+}	
+
+//----------------------------------------------------------------------------------------
+// List of works on which a name is based (typically 1)
+function taxon_name_works_query($args)
+{
+	global $config;
+	
+	$sparql = 'PREFIX schema: <http://schema.org/>
+	PREFIX identifiers: <https://registry.identifiers.org/registry/>
+	PREFIX bibo: <http://purl.org/ontology/bibo/>
+	PREFIX gql: <' . $config['hack_uri'] . '>
+
+	CONSTRUCT
+	{
+	 ?work a ?type . 
+
+	 ?work gql:titles ?title .
+	 ?work schema:datePublished ?datePublished .
+
+	 ?work bibo:doi ?doi .
+	 ?work schema:url ?url .
+	 
+	 ?work schema:sameAs ?sameAs .
+	 
+	}
+	WHERE
+	{
+	  VALUES ?taxonName { <' . $args['id'] . '> }
+	  
+	  ?taxonName schema:isBasedOn ?work .
+	  ?work rdf:type ?type .
+	  
+	  OPTIONAL
+		{
+		?work schema:name ?title . 
+		}
+			
+		OPTIONAL
+		{
+			?work schema:datePublished ?datePublished .
+		}
+		OPTIONAL
+		{
+			?work schema:url ?url . 
+		}
+		OPTIONAL
+		{
+		  ?work schema:identifier ?identifier .
+          ?identifier schema:propertyID "doi" .
+          ?identifier schema:value ?doi .
+		}   
+		
+		OPTIONAL
+		{
+			# get things that work is sameAs, and things sameAs work
+			?work schema:sameAs|^schema:sameAs ?sameAs
+		}   
+		
+	} 
+	';
+	
+	//echo $sparql;
+	
+	$doc = list_object_query($args, $sparql);
+
+	return $doc;	
+
+}	
+
+
+//----------------------------------------------------------------------------------------
+// List of person affiliations
+function person_affiliation_query($args)
+{
+	global $config;
+	
+	$sparql = 'PREFIX schema: <http://schema.org/>
+	PREFIX gql: <' . $config['hack_uri'] . '>
+
+	CONSTRUCT
+	{
+	 ?affiliation a ?type . 
+
+	 ?affiliation schema:name ?name .
+	}
+	WHERE
+	{
+	  VALUES ?person { <' . $args['id'] . '> }
+	  
+	  ?person schema:affiliation ?affiliation .
+	  ?affiliation rdf:type ?type .
+	  
+	   {
+		 VALUES ?type { schema:Organization } # In case we haven\'t defined a type for this
+	   }
+	   UNION
+	   {
+		?affiliation a ?type .
+	   }
+  
+	 ?affiliation schema:name ?name .
+		
+	} 
+	';
+	
+	//echo $sparql;
+	
+	$doc = list_object_query($args, $sparql);
+
+	return $doc;	
+
+}	
+
+//----------------------------------------------------------------------------------------
+// List of scientific names for a creator
+function person_scientific_names_query($args)
+{
+	global $config;
+	
+	$sparql = 'PREFIX schema: <http://schema.org/>
+	PREFIX gql: <' . $config['hack_uri'] . '>
+
+	CONSTRUCT
+	{
+	 ?scientificName schema:name ?name	.
+	 ?scientificName a ?type . 
+	}
+	WHERE
+	{
+	  VALUES ?person { <' . $args['id'] . '> }
+	  
+  	?work schema:creator ?person .
+  
+  	?scientificName schema:isBasedOn ?work .
+  	?scientificName schema:name ?name .
+  	?scientificName a ?type .
+  	
+	} 
+	';
+	
+	//echo $sparql;
+	
+	$doc = list_object_query($args, $sparql);
+
+	return $doc;	
+
+}	
+
+//----------------------------------------------------------------------------------------
+// List of scientific names published by a work
+function work_scientific_names_query($args)
+{
+	global $config;
+	
+	$sparql = 'PREFIX schema: <http://schema.org/>
+	PREFIX gql: <' . $config['hack_uri'] . '>
+
+	CONSTRUCT
+	{
+	 ?scientificName schema:name ?name	.
+	 ?scientificName a ?type . 
+	}
+	WHERE
+	{
+	  VALUES ?work { <' . $args['id'] . '> }
+	    
+  	?scientificName schema:isBasedOn ?work .
+  	?scientificName schema:name ?name .
+  	?scientificName a ?type .
+  	
 	} 
 	';
 	
@@ -1197,6 +1538,8 @@ function person_query($args)
 	 ?thing schema:givenName ?givenName .
 	 ?thing schema:familyName ?familyName .
 	 
+	 ?thing schema:alternateName ?alternateName .
+	 
 	 ?thing gql:orcid ?orcid .
 	}
 	WHERE
@@ -1214,6 +1557,11 @@ function person_query($args)
   			OPTIONAL {{ ?thing schema:name ?name . } UNION { ?thing dc:title ?name . }}
   			OPTIONAL {{ ?thing schema:givenName ?givenName . } UNION { ?thing tp:forenames ?givenName . }}
   			OPTIONAL {{ ?thing schema:familyName ?familyName . } UNION { ?thing tp:surname ?familyName . }}
+  			
+  		OPTIONAL
+  		{
+  			?thing schema:alternateName ?alternateName .
+  		}
 		
 	} 
 	';
@@ -1244,6 +1592,80 @@ function person_query($args)
 	if (preg_match('/orcid.org\/(?<id>\d{4}-\d{4}-\d{4}-\d{3}(\d|X)$)/', $args['id'], $m))
 	{
 		$doc->orcid = $m['id'];
+	}
+
+
+	return $doc;	
+
+}	
+
+
+//----------------------------------------------------------------------------------------
+// An organisation
+function organisation_query($args)
+{
+	global $config;
+	
+	$sparql = 'PREFIX schema: <http://schema.org/>
+	PREFIX gql: <' . $config['hack_uri'] . '>
+
+
+	CONSTRUCT
+	{
+	 ?thing a ?type . 
+	 ?thing schema:name ?name .	 
+	 ?thing schema:alternateName ?alternateName .
+ 
+	 ?thing gql:ringgold ?ringgold .
+	 ?thing gql:ror ?ror .
+	 }
+	WHERE
+	{
+	  VALUES ?thing { <' . $args['id'] . '> }
+  
+	   {
+		 VALUES ?type { schema:Organization } # In case we haven\'t defined a type for this
+	   }
+	   UNION
+	   {
+		?thing a ?type .
+	   }
+  
+	 ?thing schema:name ?name .
+ 
+	 OPTIONAL 
+	 {
+	  ?thing schema:alternateName ?alternateName 
+	 }
+
+	 OPTIONAL 
+	 {
+	  ?thing schema:identifier ?ringgold_identifier .
+	  ?ringgold_identifier schema:propertyID "RINGGOLD" .
+	  ?ringgold_identifier schema:value ?ringgold .
+	 }
+ 
+	 OPTIONAL 
+	 {
+	  ?thing schema:identifier ?ror_identifier .
+	  ?ror_identifier schema:propertyID "ROR" .
+	  ?ror_identifier schema:value ?ror .
+	 }
+ 
+ 
+ 
+	
+	} 
+	';
+
+	
+	//echo $sparql;
+	
+	$doc = one_object_query($args, $sparql);
+	
+	if (isset($doc->name))
+	{
+		$doc->name = pick_one($doc->name);
 	}
 
 
@@ -1328,7 +1750,53 @@ if (0)
 		);	
 		$result = person_works_query($args);
 	}	
+
+	if (0)
+	{
+		// organisation
+		$args = array(
+			'id' => 'https://doi.org/10.13039/100007698' 
+		);	
+		$result = organisation_query($args);
+	}	
 	
+	if (0)
+	{
+		// affiliation
+		$args = array(
+			'id' => 'https://orcid.org/0000-0001-8259-3783' 
+		);	
+		$result = person_affiliation_query($args);
+	}	
+	
+	
+	if (0)
+	{
+		// scientific names by person
+		$args = array(
+			'id' => 'https://orcid.org/0000-0002-2168-0514' 
+		);	
+		$result = person_scientific_names_query($args);
+	}	
+
+	if (0)
+	{
+		// scientific names
+		$args = array(
+			'id' => 'urn:lsid:ipni.org:names:77191970-1' 
+		);	
+		$result = taxon_name_query($args);
+	}	
+	
+	if (1)
+	{
+		// scientific names
+		$args = array(
+			'id' => 'urn:lsid:ipni.org:names:77191970-1' 
+		);	
+		$result = taxon_name_works_query($args);
+	}	
+		
 	
 	
 	print_r($result);
