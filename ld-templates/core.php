@@ -17,6 +17,8 @@ $config['fresh'] 	= 60; // time in seconds beyond which we think data needs to b
 $config['url'] 		= 'https://zenodo.org/api/records/<ID>';
 $config['mime']		= 'application/ld+json';
 
+$fetch_count 		= 1;
+
 //----------------------------------------------------------------------------------------
 function get($url, $format = '')
 {
@@ -42,6 +44,22 @@ function get($url, $format = '')
 	
 	$info = curl_getinfo($ch);
 	$http_code = $info['http_code'];
+	
+	switch ($info['http_code'])
+	{
+		case 404:
+			echo "$url Not found\n";
+			exit();
+			break;
+			
+		case 429:
+			echo "Blocked\n";
+			exit();
+			break;
+	
+		default:
+			break;
+	}	
 	
 	curl_close($ch);
 	
@@ -130,6 +148,8 @@ function id_to_dir($id)
 function fetch_one($id, $force = false)
 {
 	global $config;
+	
+	global $fetch_count;
 
 	$filename = id_to_path($id);
 	
@@ -149,6 +169,15 @@ function fetch_one($id, $force = false)
 		$json = get($url, $config['mime']);
 		
 		file_put_contents($filename, $json);
+		
+		// Give server a break every 10 items
+		if (($fetch_count++ % 10) == 0)
+		{
+			$rand = rand(1000000, 3000000);
+			echo "\n...sleeping for " . round(($rand / 1000000),2) . ' seconds' . "\n\n";
+			usleep($rand);
+		}
+
 	}
 
 }
@@ -163,6 +192,43 @@ function fix_triples($triples)
 	$lines = explode("\n", $triples);
 	
 	// print_r($lines);	
+	
+	// fix bad URIs
+	foreach ($lines as &$line)
+	{
+		//echo $line . "\n";
+		if (preg_match_all('/\<(?<uri>(https?|URI:\s+).*)\>\s/U', $line, $m))
+		{
+			foreach ($m['uri'] as $original_uri)
+			{				
+				$uri = $original_uri;
+				
+				$uri = str_replace('<', '%3C', $uri);
+				$uri = str_replace('>', '%3E', $uri);
+
+				$uri = str_replace('[', '%5B', $uri);
+				$uri = str_replace(']', '%5D', $uri);
+			
+				$uri = str_replace(' ', '%20', $uri);	
+				$uri = str_replace('"', '%22', $uri);	
+							
+				$uri = str_replace('{\_}', '', $uri);
+				$uri = str_replace('\_', '', $uri);
+				
+				$uri = str_replace('}', '', $uri);	
+				$uri = str_replace('{', '', $uri);					
+				
+				$uri = preg_replace('/URI:\s+/', '', $uri);	
+
+				$uri = preg_replace('/%x/', '', $uri);	
+				
+				$uri = preg_replace('/\x91/', ' ', $uri);
+					
+				$line = str_replace('<' . $original_uri . '>', '<' . $uri . '>', $line);
+			}
+		}
+	}
+	
 	
 	// b-nodes
 	$bnodes = array();
