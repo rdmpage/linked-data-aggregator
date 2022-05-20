@@ -30,13 +30,16 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	details {
 		border:1px solid rgb(192,192,192);
 		margin-bottom: 1em;
+		background:rgba(256,192,64,0.5);
+		border-radius:4px;
 	}
 	
 	summary {
 	    padding:0.5em;
 		outline-style: none; 
-		background:green;
+		background:#FF9300;
 		color:white;
+		border-radius:4px;
 	}	
 	
 	
@@ -69,6 +72,16 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	span.doi:before {
 		content: "doi:";		
 	}
+	
+	span.lsid {
+		text-decoration: underline;
+		text-transform: lowercase;
+		font-size:12px;		
+	}
+	
+	span.lsid a {
+		color:black;
+	}		
 	
 	.figures {
 		/*background: rgb(224,224,224);*/
@@ -194,7 +207,6 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 				if (response.data.thing.type) {
 					var have_type = false;
 					
-
 					if (!have_type && response.data.thing.type.indexOf('CreativeWork') !== -1) {
 						$("#output").html("<progress></progress>");
 						have_type = true;
@@ -253,6 +265,9 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 					if (!have_type) {
 						alert("Unknown type |" + response.data.thing.type + '|');					
 					}
+				} else {
+					$("#output").html('<span style="background:orange;">Nothing found for "' + id + '"' + '</span>');
+				
 				}
 			}
 
@@ -291,12 +306,25 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 				if (response.data.taxonName.name) {
 					html += '<h2>' + response.data.taxonName.name + '</h2>';				
 				}
-
-				// published in
-				if (response.data.taxonName.isBasedOn) {
-					html += '<h3>References</h3>';
-					html += work_list_to_html(response.data.taxonName.isBasedOn);
+				
+				// id
+				
+				// LSID
+				
+				if (response.data.taxonName.id.match(/^urn:lsid/)) {
+					html += '<span class="lsid">' + '<a href="https://lsid.herokuapp.com/' + response.data.taxonName.id + '/jsonld" target="_new">' + response.data.taxonName.id + '</a></span><br/>';				
 				}
+				
+				html += '<h3>Details</h3>';
+				
+				// works
+				if (response.data.taxonName.isBasedOn) {
+					html += '<details open>';				
+					html += '<summary>Works (' + response.data.taxonName.isBasedOn.length + ')</summary>';
+					html += work_list_to_html(response.data.taxonName.isBasedOn);
+					html += '</details>';
+				}
+				
 		
 				//alert(JSON.stringify(response, null, 2));
 				//alert("success");
@@ -490,6 +518,11 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 				html += '</a>';
 			}			
 			
+			if (list[i].id.match(/^urn:lsid/)) {
+				html += '&nbsp;<span class="lsid">' + '<a href="https://lsid.herokuapp.com/' + list[i].id + '/jsonld" target="_new">' + list[i].id + '</span><br/>';				
+			}
+			
+			
 			html += '</li>';
 		}			
 		html += '</ul>';				
@@ -556,7 +589,6 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 					html += '</div>';
 				}
 				
-				html += '<h3>Activities</h3>';
 				
 				// other names
 				if (response.data.person.alternateName) {
@@ -566,6 +598,9 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 					}
 					html += '</div>';
 				}			
+				
+				
+				html += '<h3>Activities</h3>';
 				
 				// affiliation	
 				if (response.data.person.affiliation) {
@@ -783,17 +818,24 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 					html += '</div>';
 				}
 				
+				html += '<h3>Links</h3>'
+				
 				// literature cited
 				if (response.data.work.cites) {
-					html += '<h3>Cites</h3>';
+					html += '<details>';				
+					html += '<summary>Cites (' + response.data.work.cites.length + ')</summary>';
 					html += work_list_to_html(response.data.work.cites);
+					html += '</details>';
 				}
 
 				// citing
 				if (response.data.work.cited_by) {
-					html += '<h3>Cited by</h3>';
+					html += '<details>';				
+					html += '<summary>Cited by (' + response.data.work.cited_by.length + ')</summary>';
 					html += work_list_to_html(response.data.work.cited_by);
+					html += '</details>';
 				}
+				
 				
 				
 				// what is work about?				
@@ -813,8 +855,10 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 				
 				// scientific names 
 				if (response.data.work.scientificNames) {
-					html += '<h3>Taxon names</h3>';
+					html += '<details>';				
+					html += '<summary>Taxon names (' + response.data.work.scientificNames.length + ')</summary>';
 					html += name_list_to_html(response.data.work.scientificNames);
+					html += '</details>';
 				}
 				
 				

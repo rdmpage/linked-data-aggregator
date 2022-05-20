@@ -187,6 +187,8 @@ function titles_to_array($value)
 		}
 		$title->title = $value->{"@value"};
 		
+		$title->title = strip_tags($title->title);
+		
 		$strings[] = $title;
 	}
 	else
@@ -208,6 +210,8 @@ function titles_to_array($value)
 					$title->title = $v;				
 				}
 				
+				$title->title = strip_tags($title->title);
+				
 				$strings[] = $title;
 			}
 		}
@@ -215,6 +219,9 @@ function titles_to_array($value)
 		{
 			$title = new stdclass;
 			$title->title = $value;
+			
+			$title->title = strip_tags($title->title);
+			
 			$strings[] = $title;
 		}
 	}
@@ -467,65 +474,68 @@ function thing_query($args)
 	//echo $sparql;
 	
 	$doc = one_object_query($args, $sparql);
+	
+	if (isset($doc->type))
+	{
 		
-	$schema_types = array();
+		$schema_types = array();
 	
-	$types = array();
-	if (is_array($doc->type))
-	{
-		$types = $doc->type;
-	}
-	else
-	{
-		$types[] = $doc->type;
-	}
-	
-	// we may have to map types from RDF-specific vocabs to our classes
-	// we want a complte mapping as this query may be used to decide what
-	// type of thing user wants to display
-	foreach ($types as $type)
-	{
-		switch ($type)
+		$types = array();
+		if (is_array($doc->type))
 		{
-			case 'CreativeWork':
-				$schema_types[] = 'CreativeWork';
-				break;
-
-			case 'ImageObject':
-				$schema_types[] = 'ImageObject';
-				break;
-				
-			case 'Organization':
-				$schema_types[] = 'Organization';
-				break;								
-				
-			case 'Person':
-				$schema_types[] = 'Person';
-				break;				
-
-			case 'ScholarlyArticle':
-				$schema_types[] = 'ScholarlyArticle';
-				break;		
-		
-			case 'TaxonName':
-				$schema_types[] = 'TaxonName';
-				break;
-	
-			case 'Taxon':
-				$schema_types[] = 'Taxon';
-				break;
-		
-			default:
-				$schema_types[] = 'Thing';
-				break;	
+			$types = $doc->type;
+		}
+		else
+		{
+			$types[] = $doc->type;
 		}
 	
-	}	
+		// we may have to map types from RDF-specific vocabs to our classes
+		// we want a complte mapping as this query may be used to decide what
+		// type of thing user wants to display
+		foreach ($types as $type)
+		{
+			switch ($type)
+			{
+				case 'CreativeWork':
+					$schema_types[] = 'CreativeWork';
+					break;
+
+				case 'ImageObject':
+					$schema_types[] = 'ImageObject';
+					break;
+				
+				case 'Organization':
+					$schema_types[] = 'Organization';
+					break;								
+				
+				case 'Person':
+					$schema_types[] = 'Person';
+					break;				
+
+				case 'ScholarlyArticle':
+					$schema_types[] = 'ScholarlyArticle';
+					break;		
+		
+				case 'TaxonName':
+					$schema_types[] = 'TaxonName';
+					break;
 	
-	$schema_types = array_unique($schema_types);
+				case 'Taxon':
+					$schema_types[] = 'Taxon';
+					break;
+		
+				default:
+					$schema_types[] = 'Thing';
+					break;	
+			}
 	
-	$doc->type = $schema_types;
+		}	
 	
+		$schema_types = array_unique($schema_types);
+	
+		$doc->type = $schema_types;
+	}
 
 	return $doc;
 }	
@@ -1507,6 +1517,13 @@ function work_query($args)
 	{
 		foreach ($doc->author as &$author)
 		{
+			// force name to be a single string
+			if (isset($author->name))
+			{
+				$author->name = pick_one($author->name);
+			}
+		
+			// extract an ORCID if we have one
 			if (preg_match('/orcid.org\/(?<id>\d{4}-\d{4}-\d{4}-\d{3}(\d|X)$)/', $author->id, $m))
 			{
 				$author->orcid = $m['id'];

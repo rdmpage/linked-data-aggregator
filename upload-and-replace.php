@@ -35,8 +35,14 @@ foreach ($sources as $source_filename)
 		exit(1);
 	}
 	
+	
+	echo "Removing existing data for " . $source->name . "\n";
+	
+	// clean up any previous upload
+	remove_source($triplestore, $source);
+	
 	echo "Adding data for " . $source->name . "\n";
-		
+	
 	if (add_source($triplestore, $source))
 	{
 		// all good
