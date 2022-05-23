@@ -431,6 +431,12 @@ class WorkType extends ObjectType
                     		}            			
              			}
                     ],    
+                    
+                    'mainEntityOfPage' => [
+                        'type' => Type::listOf(Type::string()),
+                        'description' => "Web page about this person."
+                    ],                    
+                    
                    
                     ];
             }                    
@@ -521,7 +527,14 @@ class PersonType extends ObjectType
                         'resolve' => function($thing) {
                     		return person_scientific_names_query(array('id' => $thing->id));           	
                     	}
-                    ],        
+                    ],      
+                    
+                                        
+                    'mainEntityOfPage' => [
+                        'type' => Type::listOf(Type::string()),
+                        'description' => "Web page about this person."
+                    ],                    
+                      
                     
                     /*
                     'thumbnailUrl' => [

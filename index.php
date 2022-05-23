@@ -539,6 +539,9 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	  person(id: "` + id + `"){
 		id
 		orcid
+		
+		mainEntityOfPage
+		
 		name
 		givenName
 		familyName
@@ -597,8 +600,16 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 						html += response.data.person.alternateName[i] + ' ';
 					}
 					html += '</div>';
-				}			
+				}	
 				
+				// Web pages
+				if(response.data.person.mainEntityOfPage) {
+					html += '<br><span style="font-size:0.8em">Web pages:';
+					for (var j in response.data.person.mainEntityOfPage) {								
+						html += ' <a href="' + response.data.person.mainEntityOfPage[j] + '" target="_new">' + response.data.person.mainEntityOfPage[j] + '</a>';	
+					}
+					html += '</span>';
+				}
 				
 				html += '<h3>Activities</h3>';
 				
@@ -649,6 +660,8 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	  work(id: "` + id + `"){
     id
     doi
+    
+    mainEntityOfPage
     
     sameAs
     
@@ -801,6 +814,16 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 					}
 					html += '</span>';
 				}
+				
+				// Web pages
+				if(response.data.work.mainEntityOfPage) {
+					html += '<br><span style="font-size:0.8em">Web pages:';
+					for (var j in response.data.work.mainEntityOfPage) {								
+						html += ' <a href="' + response.data.work.mainEntityOfPage[j] + '" target="_new">' + response.data.work.mainEntityOfPage[j] + '</a>';	
+					}
+					html += '</span>';
+				}
+				
 
 				// figures				
 				if (response.data.work.figures) {

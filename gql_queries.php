@@ -71,6 +71,14 @@ $isBasedOn->{'@id'} = "isBasedOn";
 $isBasedOn->{'@container'} = "@set";
 $context->isBasedOn = $isBasedOn;
 
+// mainEntityOfPage is an array of strings
+$mainEntityOfPage = new stdclass;
+$mainEntityOfPage->{'@id'} = "mainEntityOfPage";
+$mainEntityOfPage->{'@type'} = "@id";
+$mainEntityOfPage->{'@container'} = "@set";
+$context->mainEntityOfPage = $mainEntityOfPage;
+
+
 // GraphQL specific fields that have no obvious schema.org equivalent
 
 $context->ringgold	= "gql:ringgold";
@@ -1431,6 +1439,8 @@ function work_query($args)
 	?image schema:contentUrl ?contentUrl .
 	?image schema:caption ?description .
 	
+	?work schema:mainEntityOfPage ?mainEntityOfPage .	
+	
 	
 	}
 	WHERE
@@ -1500,6 +1510,12 @@ function work_query($args)
 		?work schema:sameAs|^schema:sameAs ?sameAs
 	}   
 
+
+  		OPTIONAL
+  		{
+  			?work schema:mainEntityOfPage ?mainEntityOfPage .
+  		}
+
 		
 	} 
 	';
@@ -1558,6 +1574,8 @@ function person_query($args)
 	 ?thing schema:alternateName ?alternateName .
 	 
 	 ?thing gql:orcid ?orcid .
+	 
+	 ?thing schema:mainEntityOfPage ?mainEntityOfPage .
 	}
 	WHERE
 	{
@@ -1579,6 +1597,13 @@ function person_query($args)
   		{
   			?thing schema:alternateName ?alternateName .
   		}
+
+  		OPTIONAL
+  		{
+  			?thing schema:mainEntityOfPage ?mainEntityOfPage .
+  		}
+  		
+  		
 		
 	} 
 	';
