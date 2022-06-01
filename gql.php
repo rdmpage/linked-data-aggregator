@@ -154,21 +154,19 @@ class ImageType extends ObjectType
                     'name' => [
                         'type' => Type::string(),
                         'description' => "Name for the image."
-                    ],                    
+                    ],  
                     
-                    /*
-                    'publications' => [
-                        'type' => Type::listOf(TypeRegister::publicationType()),
-                        'description' => "Publications containing this image",
+                   'container' => [
+                        'type' =>Type::listOf(TypeRegister::SimpleWorkType()),
+                        'description' => "Works that include this image",
             			'resolve' => function($thing) {
-            				// check that there is actually something to resolve
-            			    if ($thing && isset($thing->id))
+            			
+ 							if ($thing && isset($thing->id))
             			    {
-                    			$q = new ImagePublicationsResolver(array('id' => $thing->id));
-                    			return $q->do();
-                    		}
-            			}                    ],                    
-  					*/
+                    			return image_container(array('id' => $thing->id));
+                    		}            			
+             			}
+                    ],    
                   
                     'contentUrl' => [
                         'type' => Type::string(),
@@ -312,16 +310,22 @@ class WorkType extends ObjectType
                     'volumeNumber' => [
                         'type' => Type::string(),
                         'description' => "Volume"
-                    ],   
+                    ],  
+                     
                     'issueNumber' => [
                         'type' => Type::string(),
                         'description' => "Issue."
-                    ],   
+                    ], 
+                      
                     'pagination' => [
                         'type' => Type::string(),
                         'description' => "Pagination."
                     ],   
-                    
+ 
+                    'description' => [
+                        'type' => Type::listOf(Type::string()),
+                        'description' => "Description."
+                    ],                      
                     
                     /*
                     'container' => [
@@ -449,6 +453,50 @@ class WorkType extends ObjectType
 }
 
 //----------------------------------------------------------------------------------------
+class SimplePersonType extends ObjectType
+{
+
+    public function __construct()
+    {
+        error_log('SimplePersonType');
+        $config = [
+			'description' =>   "A person in a list of people.",
+            'fields' => function(){
+                return [
+                    'id' => [
+                        'type' => Type::ID(),
+                        'description' => "The persistent id for the person."
+                    ],
+                
+                    'orcid' => [
+                        'type' => Type::ID(),
+                        'description' => "ORCID for person."
+                    ],
+ 
+                    'name' => [
+                        'type' => Type::string(),
+                        'description' => "The name of the person."
+                    ],                      
+                    
+                    /*
+                    'thumbnailUrl' => [
+                        'type' => Type::string(),
+                        'description' => "URL to a thumbnail view of the image."
+                    ],
+                    */
+                                        
+                   
+                    ];
+            }                    
+			      
+       ];
+        parent::__construct($config);
+
+    }
+
+}
+
+//----------------------------------------------------------------------------------------
 class PersonType extends ObjectType
 {
 
@@ -511,15 +559,6 @@ class PersonType extends ObjectType
                     		return person_affiliation_query(array('id' => $thing->id));
             			}
                     ],                        
-  
-                    'affiliation' => [
-                        'type' =>Type::listOf(TypeRegister::thingListType()),
-                        'description' => "Afilliation",
-            			'resolve' => function($thing) {
-                    		return person_affiliation_query(array('id' => $thing->id));
-            			}
-                    ],                        
-                  
                 
                     'scientificNames' => [
                         'type' => Type::listOf(TypeRegister::taxonNameType()),
@@ -542,7 +581,180 @@ class PersonType extends ObjectType
                         'description' => "URL to a thumbnail view of the image."
                     ],
                     */
+                    
+                    'images' => [
+                        'type' => Type::listOf(TypeRegister::imageType()),
+                        'description' => "Images in works by this person.",
+                         'resolve' => function($thing) {
+                    		return person_images_query(array('id' => $thing->id));           	
+                    	}
+                   ],  
                    
+                
+                    'identified' => [
+                        'type' => Type::listOf(TypeRegister::simpleSpecimenType()),
+                        'description' => "Specimens identified.",
+                        'resolve' => function($thing) {
+                    		return person_identified_specimen_query(array('id' => $thing->id));           	
+                    	}
+                    ],      
+
+                
+                    'recorded' => [
+                        'type' => Type::listOf(TypeRegister::simpleSpecimenType()),
+                        'description' => "Specimens recorded.",
+                        'resolve' => function($thing) {
+                    		return person_recorded_specimen_query(array('id' => $thing->id));           	
+                    	}
+                    ],      
+                   
+                    
+                   
+                    ];
+            }                    
+			      
+       ];
+        parent::__construct($config);
+
+    }
+
+}
+
+//----------------------------------------------------------------------------------------
+class SpecimenType extends ObjectType
+{
+
+    public function __construct()
+    {
+        error_log('ImageType');
+        $config = [
+			'description' =>   "A biological specimen",
+            'fields' => function(){
+                return [
+                    'id' => [
+                        'type' => Type::ID(),
+                        'description' => "The persistent id for the specimen."
+                    ],
+                                         
+                    'name' => [
+                        'type' => Type::string(),
+                        'description' => "Name for the specimen."
+                    ],  
+ 
+                                          
+                    'institutionCode' => [
+                        'type' => Type::string(),
+                        'description' => "Acronym or code for the institution holding this specimen."
+                    ],  
+
+                                         
+                    'collectionCode' => [
+                        'type' => Type::string(),
+                        'description' => "Acronym or code for the collection containing this specimen."
+                    ],  
+
+                                         
+                    'catalogNumber' => [
+                        'type' => Type::string(),
+                        'description' => "Catalogue number for the specimen."
+                    ],  
+
+                                         
+                    'occurrenceID' => [
+                        'type' => Type::string(),
+                        'description' => "Unique identifier for the specimen"
+                    ],  
+                    
+ 
+                     'gbif' => [
+                        'type' => Type::ID(),
+                        'description' => "Corresponding record in GBIF"
+                    ],  
+                    
+
+                    'identified' => [
+                        'type' => Type::listOf(TypeRegister::SimplePersonType()),
+                        'description' => "The person or people who identified this specimen.",
+            			'resolve' => function($thing) {
+                    		return specimen_identified_query(array('id' => $thing->id));
+            			}
+                        
+                    ],                                                                                 
+                    
+                     'recorded' => [
+                        'type' => Type::listOf(TypeRegister::SimplePersonType()),
+                        'description' => "The person or people who recorded this specimen.",
+            			'resolve' => function($thing) {
+                    		return specimen_recorded_query(array('id' => $thing->id));
+            			}
+                        
+                    ],                                                                                 
+                  
+                     
+ 
+                    ];
+            }                    
+			      
+       ];
+        parent::__construct($config);
+
+    }
+
+}
+
+//----------------------------------------------------------------------------------------
+class SimpleSpecimenType extends ObjectType
+{
+
+    public function __construct()
+    {
+        error_log('SimpleSpecimenType');
+        $config = [
+			'description' =>   "A biological specimen in a list",
+            'fields' => function(){
+                return [
+                    'id' => [
+                        'type' => Type::ID(),
+                        'description' => "The persistent id for the specimen."
+                    ],
+                                         
+                    'name' => [
+                        'type' => Type::string(),
+                        'description' => "Name for the specimen."
+                    ],  
+ 
+ /*                                         
+                    'institutionCode' => [
+                        'type' => Type::string(),
+                        'description' => "Acronym or code for the institution holding this specimen."
+                    ],  
+
+                                         
+                    'collectionCode' => [
+                        'type' => Type::string(),
+                        'description' => "Acronym or code for the collection containing this specimen."
+                    ],  
+
+                                         
+                    'catalogNumber' => [
+                        'type' => Type::string(),
+                        'description' => "Catalogue number for the specimen."
+                    ],  
+
+                                         
+                    'occurrenceID' => [
+                        'type' => Type::string(),
+                        'description' => "Unique identifier for the specimen"
+                    ],  
+                    
+ 
+                     'gbif' => [
+                        'type' => Type::ID(),
+                        'description' => "Corresponding record in GBIF"
+                    ],  
+                    
+*/                     
+ 
                     ];
             }                    
 			      
@@ -753,6 +965,92 @@ class TitleType extends ObjectType
 }
 
 //----------------------------------------------------------------------------------------
+class SearchType extends ObjectType
+{
+
+    public function __construct()
+    {
+        error_log('SearchType');
+        $config = [
+			'description' =>   "A simple text search.",
+            'fields' => function(){
+                return [
+                
+                    'query' => [
+                        'type' => Type::string(),
+                        'caption' => "Search query"
+                    ],                
+                
+                    'results' => [
+                        'type' => Type::listOf(TypeRegister::SearchResultType()),
+                        'description' => "Search results"
+                    ]
+
+                   
+                    ];
+            }                    
+			      
+       ];
+        parent::__construct($config);
+
+    }
+
+}
+//----------------------------------------------------------------------------------------
+class SearchResultType extends ObjectType
+{
+    public function __construct()
+    {
+        error_log('SearchResultType');
+        $config = [
+			'description' =>  "A search result.",
+            'fields' => function(){
+                return [
+                                 
+                    'id' => [
+                        'type' => Type::string(),
+                        'caption' => "Id of thing"
+                    ],
+                    
+                   'type' => [
+                        'type' => Type::listOf(Type::string()),
+                        'caption' => "Type of thing"
+                    ],
+                                                         
+                   'thumbnailUrl' => [
+                        'type' => Type::string(),
+                        'caption' => "Link to thumbnail image of thing"
+                    ],
+                  
+ 					'name' => [
+                        'type' => Type::listOf(Type::string()),
+                        'description' => "Name of thing"
+                    ],   
+                    
+ 					'score' => [
+                        'type' => Type::float(),
+                        'description' => "Score of thing in search results"
+                    ],  
+                    
+ 					'identifier' => [
+                        'type' => Type::listOf(Type::string()),
+                        'description' => "Identifier of thing"
+                    ],   
+                                          
+                                         
+                   
+                    ];
+            }                    
+			      
+       ];
+      parent::__construct($config);
+
+    }
+
+}
+
+
+//----------------------------------------------------------------------------------------
 
 class TypeRegister {
 
@@ -771,11 +1069,30 @@ class TypeRegister {
 	private static $organisationType;	
 	
 	private static $thingListType;
-		    
+
+	private static $searchType;
+	private static $searchResultType;
+	
+	private static $specimenType;
+	
+	private static $simplePersonType;
+	private static $simpleSpecimenType;
+	
+	
     // thing
     public static function thingType(){
         return self::$thingType ?: (self::$thingType = new ThingType());
     }      
+    
+    public static function searchType(){
+        return self::$searchType ?: (self::$searchType = new SearchType());
+    }      
+        
+    // search result
+    public static function searchResultType(){
+        return self::$searchResultType ?: (self::$searchResultType = new SearchResultType());
+    }      
+    
     
     // an image
     public static function imageType(){
@@ -790,7 +1107,13 @@ class TypeRegister {
     // a person
     public static function personType(){
         return self::$personType ?: (self::$personType = new PersonType());
+    } 
+    
+    // a person in a list
+    public static function simplePersonType(){
+        return self::$simplePersonType ?: (self::$simplePersonType = new SimplePersonType());
     }     
+        
     
     // work
     public static function workType(){
@@ -806,8 +1129,6 @@ class TypeRegister {
     public static function thingListType(){
         return self::$thingListType ?: (self::$thingListType = new ThingListType());
     }  
-    
-      
 
     // taxon name AKA scientific name
     public static function taxonNameType(){
@@ -822,7 +1143,18 @@ class TypeRegister {
  	// title
     public static function titleType(){
         return self::$titleType ?: (self::$titleType = new TitleType());
-    }          
+    }  
+    
+    // specimen        
+    public static function specimenType(){
+        return self::$specimenType ?: (self::$specimenType = new SpecimenType());
+    }      
+    
+    // specimen in a list
+    public static function simpleSpecimenType(){
+        return self::$simpleSpecimenType ?: (self::$simpleSpecimenType = new SimpleSpecimenType());
+    }     
+    
 
 }
 
@@ -887,6 +1219,21 @@ $schema = new Schema([
                 }
             ],        	
                 	
+           
+           'specimen' => [
+                'type' => TypeRegister::specimenType(),
+                'description' => 'Returns a specimen',
+                'args' => [
+                    'id' => [
+                        'type' => Type::string(),
+                        'description' => 'Identifier for specimen'
+                    ]
+                ],
+                'resolve' => function($rootValue, $args, $context, $info) {
+                    return specimen_query($args);
+                }
+            ],        	
+                	
             
             
            'taxonName' => [
@@ -945,6 +1292,20 @@ $schema = new Schema([
                 }
             ],  
              
+           'search' => [
+                'type' => TypeRegister::searchType(),
+                'description' => 'Search for entities',
+                'args' => [
+                    'query' => [
+                        'type' => Type::string(),
+                        'description' => 'Search query'
+                    ]
+                ],
+                'resolve' => function($rootValue, $args, $context, $info) {
+                    return search_query($args);
+                }
+            ],    
+              
             
  
         ]

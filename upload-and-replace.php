@@ -11,7 +11,7 @@ if (!$triplestore)
 
 $sources = array(
 	//'iflocal.yaml',
-	'wikispecies.yaml',
+	//'wikispecies.yaml',
 	//'orcid.yaml'
 	//'markhughes.yaml'
 	
@@ -23,6 +23,8 @@ $sources = array(
 	
 	//'glue.yaml'
 	//'citation.yaml'
+	
+	'bionomia.yaml'
 );
 
 

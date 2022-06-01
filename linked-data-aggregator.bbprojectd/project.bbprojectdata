@@ -5,13 +5,16 @@
 	<key>HierarchyData</key>
 	<array>
 		<string>D7A45704-C618-4160-B263-043A0E8C2B39</string>
+		<string>D9050DF8-3600-4D1F-80EA-D8454904F63D</string>
 		<string>BC907076-ADB6-4E1B-9CA1-A15EF276C679</string>
 		<string>3836CFE2-41D9-4A8A-B4BF-A1F54D24F081</string>
 		<string>64EFA1D2-315B-4147-AC0B-9B11DDF8DB22</string>
 		<string>8503E8BE-E49F-4133-A96C-F4788A3714B9</string>
 		<string>DF6F71DF-6240-475F-847D-1A2EED8567D2</string>
 		<string>CE7C5B21-0780-4046-B882-FA7E7B136F99</string>
+		<string>462BC8B5-A954-4C58-8F72-C58FA648198B</string>
 		<string>88D96610-9DA5-4EFC-9965-547493D0BB72</string>
+		<string>68FF4BCA-4B40-4517-A135-2AF3408883C6</string>
 		<dict>
 			<key>CollectionID</key>
 			<string>91C23B67-0D3F-40A9-B237-5588C5EF48BA</string>
@@ -20,8 +23,11 @@
 				<string>D21F11EA-B32B-44A8-BB98-0E2AE9DC0651</string>
 				<string>75EC127B-C5B2-4F63-801D-8287DEB028FA</string>
 				<string>66C2F924-0D37-43F3-A299-C92985F1C3DD</string>
+				<string>E4E986E3-82AC-48D7-9F1B-41EB3D88C8C8</string>
+				<string>FB49B564-C0D9-40FD-92EC-A681075C7D94</string>
 			</array>
 		</dict>
+		<string>BBFBA8C5-1A4B-412B-86D6-78D83F51E689</string>
 	</array>
 	<key>ProjectItems</key>
 	<dict>
@@ -68,6 +74,55 @@
 			</dict>
 			<key>ItemName</key>
 			<string>core.php</string>
+			<key>ItemType</key>
+			<string>FileReference</string>
+			<key>UserOverrideItemName</key>
+			<true/>
+		</dict>
+		<key>462BC8B5-A954-4C58-8F72-C58FA648198B</key>
+		<dict>
+			<key>ItemData</key>
+			<dict>
+				<key>BookmarkData</key>
+				<data>
+				Ym9vawADAAAAAAQQMAAAALNpbsQJbnsPBn9kz0S0XtIL
+				daIGwG1U/V+YbGcsyoXO/AEAAAQAAAADAwAAAAgAKAUA
+				AAABAQAAVXNlcnMAAAAFAAAAAQEAAHJwYWdlAAAACwAA
+				AAEBAABEZXZlbG9wbWVudAAWAAAAAQEAAGxpbmtlZC1k
+				YXRhLWFnZ3JlZ2F0b3IAABYAAAABAQAAdXBsb2FkLWFu
+				ZC1yZXBsYWNlLnBocAAAFAAAAAEGAAAQAAAAIAAAADAA
+				AABEAAAAZAAAAAgAAAAEAwAAEGcCAAAAAAAIAAAABAMA
+				AIV0DQAAAAAACAAAAAQDAAAjWA4AAAAAAAgAAAAEAwAA
+				7C/fCgMAAAAIAAAABAMAABtKBAsDAAAAFAAAAAEGAACg
+				AAAAsAAAAMAAAADQAAAA4AAAAAgAAAAABAAAQcQIM9po
+				n/8YAAAAAQIAAAEAAAAAAAAADwAAAAAAAAAAAAAAAAAA
+				AAgAAAAEAwAAAwAAAAAAAAAEAAAAAwMAAPUBAAAIAAAA
+				AQkAAGZpbGU6Ly8vDAAAAAEBAABNYWNpbnRvc2ggSEQI
+				AAAABAMAAADgxTJ0AAAACAAAAAAEAABBvt1dYgAAACQA
+				AAABAQAAMjVFNDI4NkQtNzEyQy0zODk5LUI0M0YtNUQz
+				RjZBOEJEMTIxGAAAAAECAACBAAAAAQAAAO8TAAABAAAA
+				AAAAAAAAAAABAAAAAQEAAC8AAAAAAAAAAQUAAMwAAAD+
+				////AQAAAAAAAAAQAAAABBAAAIQAAAAAAAAABRAAAPAA
+				AAAAAAAAEBAAABwBAAAAAAAAQBAAAAwBAAAAAAAAAiAA
+				AOgBAAAAAAAABSAAAFgBAAAAAAAAECAAAGgBAAAAAAAA
+				ESAAAJwBAAAAAAAAEiAAAHwBAAAAAAAAEyAAAIwBAAAA
+				AAAAICAAAMgBAAAAAAAAMCAAAPQBAAAAAAAAAcAAADwB
+				AAAAAAAAEcAAACAAAAAAAAAAEsAAAEwBAAAAAAAAENAA
+				AAQAAAAAAAAA
+				</data>
+				<key>FileURL</key>
+				<string>file:///Users/rpage/Development/linked-data-aggregator/upload-and-replace.php</string>
+				<key>HasSecurityScope</key>
+				<true/>
+				<key>RelativePath</key>
+				<string>./upload-and-replace.php</string>
+				<key>TypeID</key>
+				<string>_CFileLocator</string>
+				<key>Version</key>
+				<integer>1</integer>
+			</dict>
+			<key>ItemName</key>
+			<string>upload-and-replace.php</string>
 			<key>ItemType</key>
 			<string>FileReference</string>
 			<key>UserOverrideItemName</key>
@@ -172,6 +227,54 @@
 			<string>FileReference</string>
 			<key>UserOverrideItemName</key>
 			<true/>
+		</dict>
+		<key>68FF4BCA-4B40-4517-A135-2AF3408883C6</key>
+		<dict>
+			<key>ItemData</key>
+			<dict>
+				<key>BookmarkData</key>
+				<data>
+				Ym9vazQDAAAAAAQQMAAAAEcVyfsQwFsh+kioUOGGmvzq
+				/wTzHMLX6c1W8C6n+re1JAIAAAQAAAADAwAAAAgAKAUA
+				AAABAQAAVXNlcnMAAAAFAAAAAQEAAHJwYWdlAAAACwAA
+				AAEBAABEZXZlbG9wbWVudAAWAAAAAQEAAGxpbmtlZC1k
+				YXRhLWFnZ3JlZ2F0b3IAABAAAAABAQAAd2lraXNwZWNp
+				ZXMueWFtbBQAAAABBgAAEAAAACAAAAAwAAAARAAAAGQA
+				AAAIAAAABAMAABBnAgAAAAAACAAAAAQDAACFdA0AAAAA
+				AAgAAAAEAwAAI1gOAAAAAAAIAAAABAMAAOwv3woDAAAA
+				CAAAAAQDAADq+h8LAwAAABQAAAABBgAAmAAAAKgAAAC4
+				AAAAyAAAANgAAAAIAAAAAAQAAEHB4y9zgAAAGAAAAAEC
+				AAABAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAAIAAAABAMA
+				AAMAAAAAAAAABAAAAAMDAAD1AQAACAAAAAEJAABmaWxl
+				Oi8vLwwAAAABAQAATWFjaW50b3NoIEhECAAAAAQDAAAA
+				4MUydAAAAAgAAAAABAAAQb7dXWIAAAAkAAAAAQEAADI1
+				RTQyODZELTcxMkMtMzg5OS1CNDNGLTVEM0Y2QThCRDEy
+				MRgAAAABAgAAgQAAAAEAAADvEwAAAQAAAAAAAAAAAAAA
+				AQAAAAEBAAAvAAAAAAAAAAEFAAAaAAAAAQEAAE5TVVJM
+				RG9jdW1lbnRJZGVudGlmaWVyS2V5AAAEAAAAAwMAAMWz
+				AQDYAAAA/v///wEAAAAAAAAAEQAAAAQQAAB8AAAAAAAA
+				AAUQAADoAAAAAAAAABAQAAAUAQAAAAAAAEAQAAAEAQAA
+				AAAAAAIgAADgAQAAAAAAAAUgAABQAQAAAAAAABAgAABg
+				AQAAAAAAABEgAACUAQAAAAAAABIgAAB0AQAAAAAAABMg
+				AACEAQAAAAAAACAgAADAAQAAAAAAADAgAADsAQAAAAAA
+				AAHAAAA0AQAAAAAAABHAAAAgAAAAAAAAABLAAABEAQAA
+				AAAAABDQAAAEAAAAAAAAAPQBAIAYAgAAAAAAAA==
+				</data>
+				<key>FileURL</key>
+				<string>file:///Users/rpage/Development/linked-data-aggregator/wikispecies.yaml</string>
+				<key>HasSecurityScope</key>
+				<true/>
+				<key>RelativePath</key>
+				<string>./wikispecies.yaml</string>
+				<key>TypeID</key>
+				<string>_CFileLocator</string>
+				<key>Version</key>
+				<integer>1</integer>
+			</dict>
+			<key>ItemName</key>
+			<string>wikispecies.yaml</string>
+			<key>ItemType</key>
+			<string>FileReference</string>
 		</dict>
 		<key>75EC127B-C5B2-4F63-801D-8287DEB028FA</key>
 		<dict>
@@ -328,6 +431,54 @@
 			<string>configuration files</string>
 			<key>ItemType</key>
 			<string>StaticCollection</string>
+		</dict>
+		<key>BBFBA8C5-1A4B-412B-86D6-78D83F51E689</key>
+		<dict>
+			<key>ItemData</key>
+			<dict>
+				<key>BookmarkData</key>
+				<data>
+				Ym9va/QCAAAAAAQQMAAAABNvu9fKbzJClv7DoSv0XJ4k
+				dwMfTUKLflQHsGHK4kFl8AEAAAQAAAADAwAAAAgAKAUA
+				AAABAQAAVXNlcnMAAAAFAAAAAQEAAHJwYWdlAAAACwAA
+				AAEBAABEZXZlbG9wbWVudAAWAAAAAQEAAGxpbmtlZC1k
+				YXRhLWFnZ3JlZ2F0b3IAAAwAAAABAQAAbGQtdGVtcGxh
+				dGVzFAAAAAEGAAAQAAAAIAAAADAAAABEAAAAZAAAAAgA
+				AAAEAwAAEGcCAAAAAAAIAAAABAMAAIV0DQAAAAAACAAA
+				AAQDAAAjWA4AAAAAAAgAAAAEAwAA7C/fCgMAAAAIAAAA
+				BAMAAAzZ7AoDAAAAFAAAAAEGAACUAAAApAAAALQAAADE
+				AAAA1AAAAAgAAAAABAAAQcQYkJcxkCgYAAAAAQIAAAIA
+				AAAAAAAADwAAAAAAAAAAAAAAAAAAAAgAAAAEAwAAAwAA
+				AAAAAAAEAAAAAwMAAPUBAAAIAAAAAQkAAGZpbGU6Ly8v
+				DAAAAAEBAABNYWNpbnRvc2ggSEQIAAAABAMAAADgxTJ0
+				AAAACAAAAAAEAABBvt1dYgAAACQAAAABAQAAMjVFNDI4
+				NkQtNzEyQy0zODk5LUI0M0YtNUQzRjZBOEJEMTIxGAAA
+				AAECAACBAAAAAQAAAO8TAAABAAAAAAAAAAAAAAABAAAA
+				AQEAAC8AAAAAAAAAAQUAAMwAAAD+////AQAAAAAAAAAQ
+				AAAABBAAAHgAAAAAAAAABRAAAOQAAAAAAAAAEBAAABAB
+				AAAAAAAAQBAAAAABAAAAAAAAAiAAANwBAAAAAAAABSAA
+				AEwBAAAAAAAAECAAAFwBAAAAAAAAESAAAJABAAAAAAAA
+				EiAAAHABAAAAAAAAEyAAAIABAAAAAAAAICAAALwBAAAA
+				AAAAMCAAAOgBAAAAAAAAAcAAADABAAAAAAAAEcAAACAA
+				AAAAAAAAEsAAAEABAAAAAAAAENAAAAQAAAAAAAAA
+				</data>
+				<key>FileURL</key>
+				<string>file:///Users/rpage/Development/linked-data-aggregator/ld-templates/</string>
+				<key>HasSecurityScope</key>
+				<true/>
+				<key>RelativePath</key>
+				<string>./ld-templates</string>
+				<key>TypeID</key>
+				<string>_CFileLocator</string>
+				<key>Version</key>
+				<integer>1</integer>
+			</dict>
+			<key>ItemName</key>
+			<string>ld-templates</string>
+			<key>ItemType</key>
+			<string>FolderReference</string>
+			<key>UserOverrideItemName</key>
+			<true/>
 		</dict>
 		<key>BC907076-ADB6-4E1B-9CA1-A15EF276C679</key>
 		<dict>
@@ -522,6 +673,55 @@
 			<key>ItemType</key>
 			<string>FileReference</string>
 		</dict>
+		<key>D9050DF8-3600-4D1F-80EA-D8454904F63D</key>
+		<dict>
+			<key>ItemData</key>
+			<dict>
+				<key>BookmarkData</key>
+				<data>
+				Ym9va/gCAAAAAAQQMAAAAPsUr8OEpwMZvrFKuBW7tuuM
+				RwFZQ0cqwr8oOv2pOki+9AEAAAQAAAADAwAAAAgAKAUA
+				AAABAQAAVXNlcnMAAAAFAAAAAQEAAHJwYWdlAAAACwAA
+				AAEBAABEZXZlbG9wbWVudAAWAAAAAQEAAGxpbmtlZC1k
+				YXRhLWFnZ3JlZ2F0b3IAAA0AAAABAQAAYmlvbm9taWEu
+				eWFtbAAAABQAAAABBgAAEAAAACAAAAAwAAAARAAAAGQA
+				AAAIAAAABAMAABBnAgAAAAAACAAAAAQDAACFdA0AAAAA
+				AAgAAAAEAwAAI1gOAAAAAAAIAAAABAMAAOwv3woDAAAA
+				CAAAAAQDAACHelELAwAAABQAAAABBgAAmAAAAKgAAAC4
+				AAAAyAAAANgAAAAIAAAAAAQAAEHB4y9zgAAAGAAAAAEC
+				AAABAAAAAAAAAA8AAAAAAAAAAAAAAAAAAAAIAAAABAMA
+				AAMAAAAAAAAABAAAAAMDAAD1AQAACAAAAAEJAABmaWxl
+				Oi8vLwwAAAABAQAATWFjaW50b3NoIEhECAAAAAQDAAAA
+				4MUydAAAAAgAAAAABAAAQb7dXWIAAAAkAAAAAQEAADI1
+				RTQyODZELTcxMkMtMzg5OS1CNDNGLTVEM0Y2QThCRDEy
+				MRgAAAABAgAAgQAAAAEAAADvEwAAAQAAAAAAAAAAAAAA
+				AQAAAAEBAAAvAAAAAAAAAAEFAADMAAAA/v///wEAAAAA
+				AAAAEAAAAAQQAAB8AAAAAAAAAAUQAADoAAAAAAAAABAQ
+				AAAUAQAAAAAAAEAQAAAEAQAAAAAAAAIgAADgAQAAAAAA
+				AAUgAABQAQAAAAAAABAgAABgAQAAAAAAABEgAACUAQAA
+				AAAAABIgAAB0AQAAAAAAABMgAACEAQAAAAAAACAgAADA
+				AQAAAAAAADAgAADsAQAAAAAAAAHAAAA0AQAAAAAAABHA
+				AAAgAAAAAAAAABLAAABEAQAAAAAAABDQAAAEAAAAAAAA
+				AA==
+				</data>
+				<key>FileURL</key>
+				<string>file:///Users/rpage/Development/linked-data-aggregator/bionomia.yaml</string>
+				<key>HasSecurityScope</key>
+				<true/>
+				<key>RelativePath</key>
+				<string>./bionomia.yaml</string>
+				<key>TypeID</key>
+				<string>_CFileLocator</string>
+				<key>Version</key>
+				<integer>1</integer>
+			</dict>
+			<key>ItemName</key>
+			<string>bionomia.yaml</string>
+			<key>ItemType</key>
+			<string>FileReference</string>
+			<key>UserOverrideItemName</key>
+			<true/>
+		</dict>
 		<key>DF6F71DF-6240-475F-847D-1A2EED8567D2</key>
 		<dict>
 			<key>ItemData</key>
@@ -567,6 +767,106 @@
 			</dict>
 			<key>ItemName</key>
 			<string>index.php</string>
+			<key>ItemType</key>
+			<string>FileReference</string>
+			<key>UserOverrideItemName</key>
+			<true/>
+		</dict>
+		<key>E4E986E3-82AC-48D7-9F1B-41EB3D88C8C8</key>
+		<dict>
+			<key>ItemData</key>
+			<dict>
+				<key>BookmarkData</key>
+				<data>
+				Ym9vazADAAAAAAQQMAAAAI9NaIxSx0Vwh+/mO4mJLlW6
+				sCyvsa6Tr7WLUsK5YhGRIAIAAAQAAAADAwAAAAgAKAUA
+				AAABAQAAVXNlcnMAAAAFAAAAAQEAAHJwYWdlAAAACwAA
+				AAEBAABEZXZlbG9wbWVudAAWAAAAAQEAAGxpbmtlZC1k
+				YXRhLWFnZ3JlZ2F0b3IAAAoAAAABAQAAb3JjaWQueWFt
+				bAAAFAAAAAEGAAAQAAAAIAAAADAAAABEAAAAZAAAAAgA
+				AAAEAwAAEGcCAAAAAAAIAAAABAMAAIV0DQAAAAAACAAA
+				AAQDAAAjWA4AAAAAAAgAAAAEAwAA7C/fCgMAAAAIAAAA
+				BAMAACqB5QoDAAAAFAAAAAEGAACUAAAApAAAALQAAADE
+				AAAA1AAAAAgAAAAABAAAQcHjL3OAAAAYAAAAAQIAAAEA
+				AAAAAAAADwAAAAAAAAAAAAAAAAAAAAgAAAAEAwAAAwAA
+				AAAAAAAEAAAAAwMAAPUBAAAIAAAAAQkAAGZpbGU6Ly8v
+				DAAAAAEBAABNYWNpbnRvc2ggSEQIAAAABAMAAADgxTJ0
+				AAAACAAAAAAEAABBvt1dYgAAACQAAAABAQAAMjVFNDI4
+				NkQtNzEyQy0zODk5LUI0M0YtNUQzRjZBOEJEMTIxGAAA
+				AAECAACBAAAAAQAAAO8TAAABAAAAAAAAAAAAAAABAAAA
+				AQEAAC8AAAAAAAAAAQUAABoAAAABAQAATlNVUkxEb2N1
+				bWVudElkZW50aWZpZXJLZXkAAAQAAAADAwAAUbMBANgA
+				AAD+////AQAAAAAAAAARAAAABBAAAHgAAAAAAAAABRAA
+				AOQAAAAAAAAAEBAAABABAAAAAAAAQBAAAAABAAAAAAAA
+				AiAAANwBAAAAAAAABSAAAEwBAAAAAAAAECAAAFwBAAAA
+				AAAAESAAAJABAAAAAAAAEiAAAHABAAAAAAAAEyAAAIAB
+				AAAAAAAAICAAALwBAAAAAAAAMCAAAOgBAAAAAAAAAcAA
+				ADABAAAAAAAAEcAAACAAAAAAAAAAEsAAAEABAAAAAAAA
+				ENAAAAQAAAAAAAAA8AEAgBQCAAAAAAAA
+				</data>
+				<key>FileURL</key>
+				<string>file:///Users/rpage/Development/linked-data-aggregator/orcid.yaml</string>
+				<key>HasSecurityScope</key>
+				<true/>
+				<key>RelativePath</key>
+				<string>./orcid.yaml</string>
+				<key>TypeID</key>
+				<string>_CFileLocator</string>
+				<key>Version</key>
+				<integer>1</integer>
+			</dict>
+			<key>ItemName</key>
+			<string>orcid.yaml</string>
+			<key>ItemType</key>
+			<string>FileReference</string>
+			<key>UserOverrideItemName</key>
+			<true/>
+		</dict>
+		<key>FB49B564-C0D9-40FD-92EC-A681075C7D94</key>
+		<dict>
+			<key>ItemData</key>
+			<dict>
+				<key>BookmarkData</key>
+				<data>
+				Ym9vazADAAAAAAQQMAAAACmCA25/iCMZ1Pimia473LMo
+				ENgkLg/K6oU7NVhmxoBiIAIAAAQAAAADAwAAAAgAKAUA
+				AAABAQAAVXNlcnMAAAAFAAAAAQEAAHJwYWdlAAAACwAA
+				AAEBAABEZXZlbG9wbWVudAAWAAAAAQEAAGxpbmtlZC1k
+				YXRhLWFnZ3JlZ2F0b3IAAAsAAAABAQAAemVub2RvLnlh
+				bWwAFAAAAAEGAAAQAAAAIAAAADAAAABEAAAAZAAAAAgA
+				AAAEAwAAEGcCAAAAAAAIAAAABAMAAIV0DQAAAAAACAAA
+				AAQDAAAjWA4AAAAAAAgAAAAEAwAA7C/fCgMAAAAIAAAA
+				BAMAALyG7QoDAAAAFAAAAAEGAACUAAAApAAAALQAAADE
+				AAAA1AAAAAgAAAAABAAAQcHjL3OAAAAYAAAAAQIAAAEA
+				AAAAAAAADwAAAAAAAAAAAAAAAAAAAAgAAAAEAwAAAwAA
+				AAAAAAAEAAAAAwMAAPUBAAAIAAAAAQkAAGZpbGU6Ly8v
+				DAAAAAEBAABNYWNpbnRvc2ggSEQIAAAABAMAAADgxTJ0
+				AAAACAAAAAAEAABBvt1dYgAAACQAAAABAQAAMjVFNDI4
+				NkQtNzEyQy0zODk5LUI0M0YtNUQzRjZBOEJEMTIxGAAA
+				AAECAACBAAAAAQAAAO8TAAABAAAAAAAAAAAAAAABAAAA
+				AQEAAC8AAAAAAAAAAQUAABoAAAABAQAATlNVUkxEb2N1
+				bWVudElkZW50aWZpZXJLZXkAAAQAAAADAwAAaLMBANgA
+				AAD+////AQAAAAAAAAARAAAABBAAAHgAAAAAAAAABRAA
+				AOQAAAAAAAAAEBAAABABAAAAAAAAQBAAAAABAAAAAAAA
+				AiAAANwBAAAAAAAABSAAAEwBAAAAAAAAECAAAFwBAAAA
+				AAAAESAAAJABAAAAAAAAEiAAAHABAAAAAAAAEyAAAIAB
+				AAAAAAAAICAAALwBAAAAAAAAMCAAAOgBAAAAAAAAAcAA
+				ADABAAAAAAAAEcAAACAAAAAAAAAAEsAAAEABAAAAAAAA
+				ENAAAAQAAAAAAAAA8AEAgBQCAAAAAAAA
+				</data>
+				<key>FileURL</key>
+				<string>file:///Users/rpage/Development/linked-data-aggregator/zenodo.yaml</string>
+				<key>HasSecurityScope</key>
+				<true/>
+				<key>RelativePath</key>
+				<string>./zenodo.yaml</string>
+				<key>TypeID</key>
+				<string>_CFileLocator</string>
+				<key>Version</key>
+				<integer>1</integer>
+			</dict>
+			<key>ItemName</key>
+			<string>zenodo.yaml</string>
 			<key>ItemType</key>
 			<string>FileReference</string>
 			<key>UserOverrideItemName</key>

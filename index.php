@@ -28,16 +28,16 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	}
 	
 	details {
-		border:1px solid rgb(192,192,192);
+		border:1px solid rgb(128,128,128);
 		margin-bottom: 1em;
-		background:rgba(256,192,64,0.5);
+		background:rgba(192,192,192,0.5);
 		border-radius:4px;
 	}
 	
 	summary {
 	    padding:0.5em;
 		outline-style: none; 
-		background:#FF9300;
+		background:rgb(128,128,128);
 		color:white;
 		border-radius:4px;
 	}	
@@ -83,6 +83,15 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 		color:black;
 	}		
 	
+	.description {
+		font-size: 0.8em;
+		color:rgb(64,64,64);
+		border: 1px solid  rgb(192,192,192);
+		padding:0.5em;
+		line-height:1.4em;
+		border-radius:4px;
+	}
+	
 	.figures {
 		/*background: rgb(224,224,224);*/
 		display: block;
@@ -92,9 +101,38 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	.figure {
 		background: white;
 		margin: 0.2em;
-		padding: 0.2em;		
+		padding: 0.2em;	
+		border: 1px solid rgb(224,224,224);
+		text-align: justify;
 	}
 	
+	/* heavily based on https://css-tricks.com/adaptive-photo-layout-with-flexbox/ */
+	.gallery ul {
+	  display: flex;
+	  flex-wrap: wrap;
+	  
+	  list-style:none;
+	  padding-left:2px;
+	}
+
+	.gallery li {
+	  height: 80px;
+	  flex-grow: 1;
+  
+	}
+
+	.gallery li:last-child {
+	  flex-grow: 10;
+	}
+
+	.gallery img {
+	  max-height: 90%;
+	  min-width: 90%;
+	  object-fit: cover;
+	  vertical-align: bottom;
+	  
+	  border:1px solid orange;
+	}	
 	
 	</style>
 	
@@ -161,16 +199,19 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 		
 			var id = $('#id').val();		
 		
-			/*
-			if (!id.match(/^wd:/)) {
-				id = 'wd:' + id;
+			
+			if (id.match(/^(https?|urn):/)) {
+				// it's a thing
+				//history.pushState(null, null, '?id=' + id);
+
+				thing(id);
+			} else {
+				// search
+				history.pushState(null, null, '?q=' + id);
+
+				search(id);
 			}
-			*/
 			
-			thing(id);
-			
-			//person(id);
-			//work(id);
 		}
 		
         //--------------------------------------------------------------------------------
@@ -207,11 +248,13 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 				if (response.data.thing.type) {
 					var have_type = false;
 					
-					if (!have_type && response.data.thing.type.indexOf('CreativeWork') !== -1) {
+					// 
+					if (!have_type && response.data.thing.type.indexOf('ImageObject') !== -1) {
 						$("#output").html("<progress></progress>");
 						have_type = true;
-						work(id);
+						image(id);
 					}
+					
 
 					if (!have_type && response.data.thing.type.indexOf('ScholarlyArticle') !== -1) {
 						$("#output").html("<progress></progress>");
@@ -219,12 +262,13 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 						work(id);
 					}
 					
-
-					if (!have_type && response.data.thing.type.indexOf('ImageObject') !== -1) {
+					
+					if (!have_type && response.data.thing.type.indexOf('CreativeWork') !== -1) {
 						$("#output").html("<progress></progress>");
 						have_type = true;
-						image(id);
+						work(id);
 					}
+
 					
 					if (!have_type && response.data.thing.type.indexOf('TaxonName') !== -1) {
 						$("#output").html("<progress></progress>");
@@ -259,6 +303,14 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 						person(id);
 					}
 					
+
+					if (!have_type && response.data.thing.type.indexOf('Sample') !== -1) {
+						$("#output").html("<progress></progress>");
+						have_type = true;
+						specimen(id);
+					}
+					
+					
 					// types we will need to add:
 					/// https://doi.org/10.3897/dez.65.21000.suppl1 is <http://schema.org/Dataset>
 					
@@ -275,6 +327,81 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	
 	}
 	
+	
+        //--------------------------------------------------------------------------------
+		function search (id) {
+	
+			var data = {};
+			data.query = `query{
+	  search(query: "` + id + `"){
+	  results {
+		id
+        name
+        type
+        score
+        thumbnailUrl
+        identifier
+      }
+	  }
+	}`;
+
+		data.variables = {};
+		
+		$("#output").html("<progress></progress>");
+		
+		$.post(
+			'gql.php', 
+			JSON.stringify(data), 
+			function(response){ 
+				if (response.data.search.results) {
+				   var html = '';
+				   for (var i in response.data.search.results) {
+				   	html += '<div style="padding:0.2em;display: block;overflow: auto;border-bottom:1px solid rgb(128,128,128);">';
+				   	
+				   	html += '<div style="padding:4px;float:left;width:80px;height:80px;">';
+				   	
+					if (response.data.search.results[i].thumbnailUrl) {
+						html += '<img style="object-fit:cover;width:80px;height:80px;" src="https://aipbvczbup.cloudimg.io/s/height/80/' + response.data.search.results[i].thumbnailUrl + '">';
+					}
+			   	
+			   	    html += '</div>';
+				   	
+					// not verything in list may have a URI
+					if (response.data.search.results[i].id.match(/^(http|urn)/)) {
+						html += '<a href="./?id=' + response.data.search.results[i].id + '">';
+					}
+					
+					if (response.data.search.results[i].name) {
+						html += response.data.search.results[i].name.join(' / ');
+					}
+				   	
+					if (response.data.search.results[i].id.match(/^(http|urn)/)) {
+						html += '</a>';
+					}
+					
+					// identifiers?
+					if (response.data.search.results[i].identifier) {
+						html += '<ul>';
+						for (var j in response.data.search.results[i].identifier) {
+							html += '<li>';
+							html += response.data.search.results[i].identifier[j];
+							html += '</li>'
+						}						
+						html += '</ul>';
+					}					
+				   
+				    html += '</div>';
+				   }
+				   $("#output").html(html);
+				} else {
+					$("#output").html('<span style="background:orange;">Nothing found for "' + id + '"' + '</span>');
+				
+				}
+			}
+
+		);
+	
+	}	
         //--------------------------------------------------------------------------------
 		function taxon_name (id) {
 	
@@ -473,7 +600,11 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 				html += '<a href="./?id=' + works[i].id + '">';
 			}
 			
-			html += get_title(works[i].titles);
+			if (works[i].titles) {
+				html += get_title(works[i].titles);
+			} else {
+				html += '[No title]';
+			}
 			
 			if (works[i].id.match(/^(http|urn)/)) {
 				html += '</a>';
@@ -519,7 +650,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 			}			
 			
 			if (list[i].id.match(/^urn:lsid/)) {
-				html += '&nbsp;<span class="lsid">' + '<a href="https://lsid.herokuapp.com/' + list[i].id + '/jsonld" target="_new">' + list[i].id + '</span><br/>';				
+				html += '&nbsp;<span class="lsid">' + '<a href="https://lsid.herokuapp.com/' + list[i].id + '/jsonld" target="_new">' + list[i].id + '</a></span><br/>';				
 			}
 			
 			
@@ -529,6 +660,83 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 		
 		return html;
 	}
+	
+        //--------------------------------------------------------------------------------
+	function person_list_to_html(list) {
+		var html = '';
+		html += '<ul>';
+		for (var i in list) {
+			html += '<li>';
+			
+			// ORCID?
+			if (list[i].orcid) {
+				html +='<img src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png">&nbsp;';
+			}
+			
+			// not verything in list may have a URI
+			if (list[i].id.match(/^(http|urn)/)) {
+				html += '<a href="./?id=' + list[i].id + '">';
+			}
+			
+			html += list[i].name;
+			
+			if (list[i].id.match(/^(http|urn)/)) {
+				html += '</a>';
+			}						
+			
+			html += '</li>';
+		}			
+		html += '</ul>';				
+		
+		return html;
+	}
+	
+       //--------------------------------------------------------------------------------
+	function thing_list_to_html(list) {
+		var html = '';
+		html += '<ul>';
+		for (var i in list) {
+			html += '<li>';
+			
+			// not verything in list may have a URI
+			if (list[i].id.match(/^(http|urn)/)) {
+				html += '<a href="./?id=' + list[i].id + '">';
+			}
+			
+			html += list[i].name;
+			
+			if (list[i].id.match(/^(http|urn)/)) {
+				html += '</a>';
+			}						
+			
+			html += '</li>';
+		}			
+		html += '</ul>';				
+		
+		return html;
+	}	
+	
+	
+        //--------------------------------------------------------------------------------
+		function image_gallery(images) {
+			var html = '';
+			html += '<div class="gallery">';
+			html += '<ul>';					
+			for (var i in images) {
+				if (images[i].thumbnailUrl) {
+					html += '<li>'
+					html += '<a href="./?id=' + images[i].id + '">';
+					html += '<img src="https://aipbvczbup.cloudimg.io/s/height/80/' + images[i].thumbnailUrl + '">';
+					html += '</a>';
+					html += '</li>'
+				}
+			}
+			html += '<li></li>';
+			html += '</ul>';
+			html += '</div>';
+
+			return html;
+		}
 	
 		
         //--------------------------------------------------------------------------------
@@ -565,6 +773,21 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
       id
       name
     }		
+    
+    images {
+    	id
+    	thumbnailUrl    
+    }
+    
+   identified {
+      id
+      name
+    }
+    
+    recorded {
+      id
+      name
+    }        
 		
 	  }
 	}`;
@@ -636,6 +859,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 					html += '</details>';
 				}
 				
+				
 				// scientific names 
 				if (response.data.person.scientificNames) {
 					html += '<details>';				
@@ -643,6 +867,32 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 					html += name_list_to_html(response.data.person.scientificNames);
 					html += '</details>';
 				}
+				
+				
+				// figures				
+				if (response.data.person.images) {
+					html += '<details>';				
+					html += '<summary>Images (' + response.data.person.images.length + ')</summary>';					
+					html += image_gallery(response.data.person.images);					
+					html += '</details>';
+				}
+				
+				// identified
+				if (response.data.person.identified) {
+					html += '<details>';				
+					html += '<summary>Identified (' + response.data.person.identified.length + ')</summary>';
+					html += thing_list_to_html(response.data.person.identified);
+					html += '</details>';
+				}
+				
+				// recorded
+				if (response.data.person.recorded) {
+					html += '<details>';				
+					html += '<summary>Recorded (' + response.data.person.recorded.length + ')</summary>';
+					html += thing_list_to_html(response.data.person.recorded);
+					html += '</details>';
+				}
+				
 		
 				//alert(JSON.stringify(response, null, 2));
 				//alert("success");
@@ -677,6 +927,8 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
       name
       orcid
     }
+    
+    description
 
     #container {
     #  id
@@ -785,6 +1037,12 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 
 				}
 				
+				// description							
+				if (response.data.work.description) {
+					html += '<div class="description">' + response.data.work.description.join('<br/>') + '</div>';					
+				}
+				
+				
 				// to do
 				if (response.data.work.container) {
 					if (response.data.work.container.id) {
@@ -828,17 +1086,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 				// figures				
 				if (response.data.work.figures) {
 					html += '<h3>Figures</h3>';
-					html += '<div class="figures">';
-					
-					for (var i in response.data.work.figures) {
-						if (response.data.work.figures[i].thumbnailUrl) {
-						    html += '<a href="./?id=' + response.data.work.figures[i].id + '">';
-							html += '<img class="figure" src="https://aipbvczbup.cloudimg.io/s/height/80/' + response.data.work.figures[i].thumbnailUrl + '">';
-							html += '</a>';
-						}
-					}
-					
-					html += '</div>';
+					html += image_gallery(response.data.work.figures);					
 				}
 				
 				html += '<h3>Links</h3>'
@@ -968,6 +1216,14 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
     caption
     thumbnailUrl
     contentUrl
+    
+    container {
+      id
+      titles {
+        title
+      }
+      doi
+    }    
   }
 }`;
 
@@ -984,12 +1240,31 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 					html += '<h2>' + response.data.image.name + '</h2>';				
 				}
 
+				html += '<figure>';
+				
+				if (response.data.image.caption) {
+					html += '<figcaption>' + response.data.image.caption + '</figcaption>';				
+				}
+				
+				// works
+				if (response.data.image.container) {
+					html += '<details open>';				
+					html += '<summary>Works containing this image (' + response.data.image.container.length + ')</summary>';
+					html += work_list_to_html(response.data.image.container);
+					html += '</details>';
+				}
+				
+
 				if (response.data.image.contentUrl) {
 					html += '<div>';
 					html += '<img class="figure" src="https://aipbvczbup.cloudimg.io/s/width/600/' + response.data.image.contentUrl + '">';	
 					html += '</div>';			
 				}
+				
+				
 
+
+				html += '</figure>';
 		
 				//alert(JSON.stringify(response, null, 2));
 				//alert("success");
@@ -1060,7 +1335,75 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	
 	}
 	
+        //--------------------------------------------------------------------------------
+		function specimen (id) {
 	
+			var data = {};
+			data.query = `query{
+  specimen(id: "` + id + `") {
+    name
+      
+    catalogNumber
+    collectionCode
+    institutionCode
+    
+    occurrenceID
+    
+    gbif  
+    
+   identified {
+      id
+      name
+      orcid
+    }
+    
+    recorded {
+      id
+      name
+      orcid
+   }
+       
+  }
+}`;
+
+		data.variables = {};
+		
+		$.post(
+			'gql.php', 
+			JSON.stringify(data), 
+			function(response){ 
+				//alert(JSON.stringify(response, null, 2));
+				var html = '';
+				
+				if (response.data.specimen.name) {
+					html += '<h2>' + response.data.specimen.name + '</h2>';				
+				}
+				
+				// recorded 
+				if (response.data.specimen.recorded) {
+					html += '<details open>';
+					html += '<summary>Recorded by (' + response.data.specimen.recorded.length + ')</summary>';
+					html += person_list_to_html(response.data.specimen.recorded);
+					html += '</details>';
+				}
+				
+				// identified 
+				if (response.data.specimen.identified) {
+					html += '<details open>';	
+					html += '<summary>Identified by (' + response.data.specimen.identified.length + ')</summary>';
+					html += person_list_to_html(response.data.specimen.identified);
+					html += '</details>';
+				}
+				
+		
+				//alert(JSON.stringify(response, null, 2));
+				//alert("success");
+				$("#output").html(html);
+				}
+		);
+	
+	}				
+			
 		
         //--------------------------------------------------------------------------------
 		function container (id) {
@@ -1149,6 +1492,14 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 		   $('#id').val(id); 
 		   go();
 		}
+		
+		var q = $.urlParam('q');
+		if (q) {
+		   q = decodeURIComponent(q);
+		   $('#id').val(q); 
+		   go();
+		}
+		
 	</script>
 
 </body>
