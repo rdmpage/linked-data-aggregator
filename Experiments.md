@@ -24,6 +24,7 @@ https://orcid.org/0000-0002-7277-1934 | Jonathan Ablett | LOTS of images
 https://doi.org/10.11646/zootaxa.3825.1.1 | Molecular systematics of terraranas (Anura: Brachycephaloidea) with an assessment of the effects of alignment and optimality criteria | lots of cites/cited by, images are all of phylogeny 
 https://orcid.org/0000-0002-6076-8463 | Casagrande, Mirna Martins | butterfly images
 https://doi.org/10.5281/zenodo.6573246 | Splendeuptychia tupinamba Freitas, Huertas & Rosa 2021, sp. nov. | A treatment that cites images, and which has a keyword that matches the new species name. 
+https://orcid.org/0000-0002-3290-5416 | Li, Shuqiang | lots of spider images
 
 ## Glue
 
