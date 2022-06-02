@@ -1093,6 +1093,8 @@ function work_cites($args)
 	 ?work bibo:doi ?doi .
 	 ?work schema:url ?url .
 	 
+	 ?work schema:thumbnailUrl ?thumbnailUrl .	
+	 
 	 ?work schema:sameAs ?sameAs .	 
 	}
 	WHERE
@@ -1118,6 +1120,10 @@ function work_cites($args)
           ?identifier schema:value ?doi .
 		}   
 		
+		OPTIONAL
+		{
+			?work schema:thumbnailUrl ?thumbnailUrl .	
+		}
 
 		
 	} 
@@ -1152,7 +1158,10 @@ function work_cited_by($args)
 	 ?work bibo:doi ?doi .
 	 ?work schema:url ?url .
 	 
+	 ?work schema:thumbnailUrl ?thumbnailUrl .
+	 
 	 ?work schema:sameAs ?sameAs .	 
+	 
 	}
 	WHERE
 	{
@@ -1177,6 +1186,10 @@ function work_cited_by($args)
           ?identifier schema:value ?doi .
 		}   
 		
+		OPTIONAL
+		{
+			?work schema:thumbnailUrl ?thumbnailUrl .	
+		}
 
 		
 	} 
@@ -1277,8 +1290,10 @@ function person_works_query($args)
 
 	 ?work bibo:doi ?doi .
 	 ?work schema:url ?url .
+
+	 ?work schema:url ?url .
 	 
-	 ?work schema:sameAs ?sameAs .
+	 ?work schema:thumbnailUrl ?thumbnailUrl .
 	 
 	}
 	WHERE
@@ -1314,6 +1329,11 @@ function person_works_query($args)
 			?work schema:sameAs|^schema:sameAs ?sameAs
 		}   
 		
+		OPTIONAL
+		{
+			# get things that work is sameAs, and things sameAs work
+			?work schema:thumbnailUrl ?thumbnailUrl
+		}   
 
 		
 	} 
@@ -2140,6 +2160,44 @@ function specimen_identified_query($args)
 	} 
 	';
 	
+	$sparql = 'PREFIX schema: <http://schema.org/>
+	PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+	PREFIX dwciri: <http://rs.tdwg.org/dwc/iri/>
+	PREFIX gql: <' . $config['hack_uri'] . '>
+
+	CONSTRUCT
+	{
+	  ?person a ?type .
+      ?person schema:name ?name .
+	}
+	WHERE
+	{
+	  VALUES ?specimen { <' . $args['id'] . '> }
+	  
+      ?specimen dwciri:identifiedBy ?bionomia .
+      ?bionomia schema:sameAs ?person .
+      
+      ?person a ?type .
+      
+	 # not every creator has a name
+	 {
+		 ?person schema:name ?name .
+	 }
+	 UNION
+	 {
+	   ?person schema:givenName ?givenName .         
+	   ?person schema:familyName ?familyName .
+   
+	   BIND(CONCAT(?givenName, " ", ?familyName) AS ?name)           
+	 }
+
+	    
+
+
+	} 
+	';
+		
+	
 	//echo $sparql;
 	
 	$doc = list_object_query($args, $sparql);
@@ -2184,9 +2242,8 @@ function specimen_recorded_query($args)
 	{
 	  VALUES ?specimen { <' . $args['id'] . '> }
 	  
-      ?specimen dwciri:recordedBy ?personIRI .
-      ?personIRI schema:sameAs ?personString .
-      BIND(IRI(?personString) AS ?person) .
+      ?specimen dwciri:recordedBy ?bionomia .
+      ?bionomia schema:sameAs ?person .
       
       ?person a ?type .
       
@@ -2271,6 +2328,39 @@ function person_identified_specimen_query($args)
 	} 
 	';
 	
+	$sparql = 'PREFIX schema: <http://schema.org/>
+	PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+	PREFIX dwc: <http://rs.tdwg.org/dwc/terms/>
+	PREFIX dwciri: <http://rs.tdwg.org/dwc/iri/>
+	PREFIX gql: <' . $config['hack_uri'] . '>
+
+	CONSTRUCT
+	{
+	 ?specimen rdf:type ?type . 
+     ?specimen schema:name ?name .
+	}
+	WHERE
+	{
+	  VALUES ?orcid { <' . $args['id'] . '> }
+	  
+      ?bionomia schema:sameAs ?orcid .
+ 
+      ?specimen dwciri:identifiedBy ?bionomia .
+
+      	OPTIONAL { ?specimen dwc:institutionCode ?institutionCode } .
+		OPTIONAL { ?specimen dwc:collectionCode ?collectionCode } .
+		OPTIONAL { ?specimen dwc:catalogNumber ?catalogNumber } .
+		OPTIONAL { ?specimen dwc:occurrenceID ?occurrenceID } .
+
+		OPTIONAL { ?specimen dwc:decimalLatitude ?decimalLatitude } .
+		OPTIONAL { ?specimen dwc:decimalLongitude ?decimalLongitude } .
+    
+        BIND (CONCAT(?institutionCode, " ", ?collectionCode,  " ", ?catalogNumber) AS ?name)
+
+	} 
+	';
+		
+	
 	//echo $sparql;
 	
 	$doc = list_object_query($args, $sparql);
@@ -2329,6 +2419,39 @@ function person_recorded_specimen_query($args)
 	} 
 	';
 	
+	$sparql = 'PREFIX schema: <http://schema.org/>
+	PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+	PREFIX dwc: <http://rs.tdwg.org/dwc/terms/>
+	PREFIX dwciri: <http://rs.tdwg.org/dwc/iri/>
+	PREFIX gql: <' . $config['hack_uri'] . '>
+
+	CONSTRUCT
+	{
+	 ?specimen rdf:type ?type . 
+     ?specimen schema:name ?name .
+	}
+	WHERE
+	{
+	  VALUES ?orcid { <' . $args['id'] . '> }
+	  
+      ?bionomia schema:sameAs ?orcid .
+ 
+      ?specimen dwciri:recordedBy ?bionomia .
+
+      	OPTIONAL { ?specimen dwc:institutionCode ?institutionCode } .
+		OPTIONAL { ?specimen dwc:collectionCode ?collectionCode } .
+		OPTIONAL { ?specimen dwc:catalogNumber ?catalogNumber } .
+		OPTIONAL { ?specimen dwc:occurrenceID ?occurrenceID } .
+
+		OPTIONAL { ?specimen dwc:decimalLatitude ?decimalLatitude } .
+		OPTIONAL { ?specimen dwc:decimalLongitude ?decimalLongitude } .
+    
+        BIND (CONCAT(?institutionCode, " ", ?collectionCode,  " ", ?catalogNumber) AS ?name)
+
+	} 
+	';
+	
+	
 	//echo $sparql;
 	
 	$doc = list_object_query($args, $sparql);
@@ -2350,7 +2473,7 @@ function person_recorded_specimen_query($args)
 
 
 
-if (1)
+if (0)
 {
 	if (0)
 	{
@@ -2503,7 +2626,7 @@ if (1)
 		$result = specimen_query($args);
 	}	
 	
-	if (0)
+	if (1)
 	{
 		// who identified?
 		$args = array(
@@ -2514,14 +2637,23 @@ if (1)
 
 	if (0)
 	{
+		// who recorded?
+		$args = array(
+			'id' => 'https://bionomia.net/occurrence/416844542' 
+		);	
+		$result = specimen_recorded_query($args);
+	}	
+
+	if (0)
+	{
 		//  identified?
 		$args = array(
-			'id' => 'https://orcid.org/0000-0001-5258-8043' 
+			'id' => 'https://orcid.org/0000-0003-3522-9342' 
 		);	
 		$result = person_identified_specimen_query($args);
 	}	
 	
-	if (1)
+	if (0)
 	{
 		//  recorded?
 		$args = array(

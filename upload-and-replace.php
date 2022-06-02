@@ -19,12 +19,12 @@ $sources = array(
 	
 	//'col.yaml'
 	
-	//'zenodo.yaml'
+	'zenodo.yaml'
 	
 	//'glue.yaml'
 	//'citation.yaml'
 	
-	'bionomia.yaml'
+	//'bionomia.yaml'
 );
 
 

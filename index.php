@@ -131,7 +131,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	  object-fit: cover;
 	  vertical-align: bottom;
 	  
-	  border:1px solid orange;
+	  border:1px solid rgb(192,192,192);
 	}	
 	
 	</style>
@@ -593,7 +593,13 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 		var html = '';
 		html += '<ul>';
 		for (var i in works) {
-			html += '<li>';
+			html += '<li style="display:block;overflow:auto;">';
+			
+			if (works[i].thumbnailUrl) {
+				html += '<img style="border:1px solid rgb(64,64,64);float:left;height:32px;width:32px;object-fit:cover;"  src="https://aipbvczbup.cloudimg.io/s/height/32/' + works[i].thumbnailUrl + '">';
+			} else {
+				html += '<div style="border:1px solid rgb(64,64,64);float:left;min-height:1em;width:32px;"></div>';
+			}
 			
 			// not verything in list may have a URI
 			if (works[i].id.match(/^(http|urn)/)) {
@@ -767,6 +773,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 		  	title
 		  }
 		  doi
+		  thumbnailUrl
 		}
 		
     scientificNames {
@@ -968,6 +975,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
     	titles {
     		title
     	}
+    	thumbnailUrl 
     }
 
     cited_by {
@@ -976,6 +984,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
     	titles {
     		title
     	}
+    	thumbnailUrl
     }
 
     #related {

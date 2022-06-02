@@ -2,6 +2,12 @@
 
 Notes on various datasets while we explore
 
+## Issues
+
+- http://localhost:4000/index.html?id=https://orcid.org/0000-0002-5350-4267 shows images in list of works as these are lined to author’s ORCID by Zenodo, but this images don’t appear in “Images” section as that assumes link is person -> work -> image.
+
+- do we need to extend notion of citation to match Plazi’s use of treatments citing images?
+
 ## Interesting examples
 
 PID | Name | Notes
@@ -13,6 +19,11 @@ https://orcid.org/0000-0001-6974-7741 | Sforzi, Alessandra | Lots of works that 
 https://doi.org/10.1080/00222930500145057 | | The genus Lilloiconcha in Colombia (Gastropoda: Charopidae) | Images in Zenodo, linked to CoL by DOI
 https://doi.org/10.5281/zenodo.3253620 |FIGURE 1 in The Hirtodrosophila melanderi species group (Diptera: Drosophilidae) from the Huanglong National Nature Reserve, Sichuan, China | Phylogeny image
 https://orcid.org/0000-0003-3952-9393 | Terry Griswold | Lots of images
+https://doi.org/10.3897/zookeys.473.8659 | Systematics of the family Plectopylidae in Vietnam with additional information on Chinese taxa (Gastropoda, Pulmonata, Stylommatophora) | abstract, images
+https://orcid.org/0000-0002-7277-1934 | Jonathan Ablett | LOTS of images
+https://doi.org/10.11646/zootaxa.3825.1.1 | Molecular systematics of terraranas (Anura: Brachycephaloidea) with an assessment of the effects of alignment and optimality criteria | lots of cites/cited by, images are all of phylogeny 
+https://orcid.org/0000-0002-6076-8463 | Casagrande, Mirna Martins | butterfly images
+https://doi.org/10.5281/zenodo.6573246 | Splendeuptychia tupinamba Freitas, Huertas & Rosa 2021, sp. nov. | A treatment that cites images, and which has a keyword that matches the new species name. 
 
 ## Glue
 

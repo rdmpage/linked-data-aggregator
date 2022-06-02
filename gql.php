@@ -267,8 +267,13 @@ class SimpleWorkType extends ObjectType
                     'sameAs' => [
                         'type' => Type::listOf(Type::string()),
                         'description' => "Other instances of this work."
-                    ],                    
-                                                                
+                    ],   
+                    
+                    'thumbnailUrl' => [
+                        'type' => Type::string(),
+                        'description' => "URL to a thumbnail view of the image or work."
+                    ],
+                                                                                                     
                                                        
                     ];
             }                    
@@ -545,7 +550,7 @@ class PersonType extends ObjectType
                     ],                     
                      
                     'works' => [
-                        'type' =>Type::listOf(TypeRegister::workType()),
+                        'type' =>Type::listOf(TypeRegister::simpleWorkType()),
                         'description' => "Authored works",
             			'resolve' => function($thing) {
                     		return person_works_query(array('id' => $thing->id));
