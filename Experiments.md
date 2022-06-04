@@ -29,6 +29,47 @@ https://doi.org/10.5281/zenodo.267559 | FIGURES 135–140 in The Neotropical cuc
 https://doi.org/10.5281/zenodo.3649001 | FIGURE 3 in Three challenges to contemporaneous taxonomy from a licheno-mycological perspective | Interesting map, can we reproduce this from data here?
 https://doi.org/10.1111/j.1096-0031.2011.00348.x | Impediments to taxonomy and users of taxonomy: Accessibility and impact evaluation | can we use this to test “related” based on existing citation data?
 
+
+## Blank nodes
+
+### Publications
+
+```
+prefix schema: <http://schema.org/>
+select * where
+{
+  #?work schema:creator <https://orcid.org/0000-0002-0497-166X> .
+  ?work a schema:CreativeWork .
+  ?work a ?type .
+  ?work schema:name ?name .
+  OPTIONAL
+  {
+    ?work schema:identifier ?identifier .
+    ?identifier schema:propertyID ?id .
+    ?identifier schema:value ?value .
+  }
+  
+  FILTER (isBlank (?work))
+  
+}
+LIMIT 100
+```
+
+### People
+
+```
+prefix schema: <http://schema.org/>
+select * where
+{
+  ?person a schema:Person .  
+  ?person schema:name ?name .
+
+  FILTER (isBlank (?person))
+  
+}
+LIMIT 100
+```
+
 ## Glue
 
 ### IPNI
