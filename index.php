@@ -101,8 +101,8 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 	.figure {
 		background: white;
 		margin: 0.2em;
-		padding: 0.2em;	
-		border: 1px solid rgb(224,224,224);
+		padding: 1em;	
+		border: 1px solid rgb(192,192,192);
 		text-align: justify;
 	}
 	
@@ -1269,7 +1269,7 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 				
 
 				if (response.data.image.contentUrl) {
-					html += '<div>';
+					html += '<div style="text-align:center;">';
 					html += '<img class="figure" src="https://aipbvczbup.cloudimg.io/s/width/600/' + response.data.image.contentUrl + '">';	
 					html += '</div>';			
 				}
