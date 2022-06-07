@@ -1,0 +1,27 @@
+# This configuration file is designed to follow the structure of a BioSchemas dataset,
+# e.g. https://bioschemas.org/profiles/Dataset
+# so that it can be easily used to generate a RDF description of the data
+
+# Name of the dataset
+# Glue is just a dump of triples that link things together that I use for experiments
+name: CITATION
+
+# An identifier for the dataset, such as a DOI
+identifier: https://figshare.org
+
+# URL for the dataset, typically the home page of the dataset.
+# Note that this URL will be used as the name of the graph for this data in the triple store
+url: https://figshare.org
+    
+# Details on how to get the actual data
+distribution:
+
+    # URL where we can fetch the data
+    contentUrl: file:///Users/rpage/Development/linked-data-aggregator/citation.nt
+    
+    # MIME type for the data, e.g. application/n-triples for triples
+    # Note that if using Blazegraph as a triple store the MIME type for triples must be
+    # text/rdf+n3 in order to preserve UTF-8 encoding
+    # encodingFormat: application/n-triples
+    encodingFormat: text/rdf+n3
+    

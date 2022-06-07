@@ -1,0 +1,17 @@
+# Configuration file for triple store
+
+# Blazegraph
+
+# Blazegraph supports namespaces so you can have more than one
+# triplestore on the same server. Unless explicitly specified
+# eveything is stored in the default namespace (which you don't have to specify)
+
+maker:            blazegraph
+#url:             http://65.108.253.35:9999/blazegraph
+url:              http://65.108.253.35:9999/blazegraph/namespace/kg
+query_endpoint:   sparql
+upload_endpoint:  sparql
+update_endpoint:            
+graph_parameter:  context-uri
+default_graph:
+

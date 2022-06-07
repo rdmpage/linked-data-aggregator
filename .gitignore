@@ -1,3 +1,7 @@
+/data/
 /junk/
 /vendor/
 .DS_Store
+
+*.nt
+
