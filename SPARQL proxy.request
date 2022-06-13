@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>baseURL</key>
+	<string>http://localhost:4000/sparql_proxy.php</string>
+	<key>bodyString</key>
+	<string></string>
+	<key>followRedirect</key>
+	<true/>
+	<key>handleJSONPCallbacks</key>
+	<false/>
+	<key>headers</key>
+	<array>
+		<dict>
+			<key>header</key>
+			<string>Accept</string>
+			<key>inUse</key>
+			<true/>
+			<key>value</key>
+			<string>application/sparql-results+json</string>
+		</dict>
+		<dict>
+			<key>header</key>
+			<string>Content-Type</string>
+			<key>inUse</key>
+			<true/>
+			<key>value</key>
+			<string>value</string>
+		</dict>
+	</array>
+	<key>httpMethod</key>
+	<string>POST</string>
+	<key>jsonpScript</key>
+	<string></string>
+	<key>paramBodyUIChoice</key>
+	<integer>0</integer>
+	<key>parameters</key>
+	<array>
+		<dict>
+			<key>inUse</key>
+			<true/>
+			<key>parameter</key>
+			<string>query</string>
+			<key>value</key>
+			<string>PREFIX rdf: &lt;http://www.w3.org/1999/02/22-rdf-syntax-ns#&gt;
+PREFIX rdfs: &lt;http://www.w3.org/2000/01/rdf-schema#&gt;
+SELECT * WHERE {
+  ?sub &lt;http://schema.org/name&gt; ?obj .
+} 
+LIMIT 5</string>
+		</dict>
+	</array>
+	<key>parametersType</key>
+	<integer>0</integer>
+	<key>presentBeforeChallenge</key>
+	<false/>
+	<key>stringEncoding</key>
+	<integer>4</integer>
+	<key>usingHTTPBody</key>
+	<true/>
+</dict>
+</plist>
