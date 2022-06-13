@@ -108,7 +108,9 @@ $context->thumbnailUrl = $thumbnailUrl;
 
 // other vocabs
 $context->dwc = "http://rs.tdwg.org/dwc/terms/";
+$context->tn  = "http://rs.tdwg.org/ontology/voc/TaxonName#";
 
+$context->rankString  = "tn:rankString";
 
 
 $config['context'] = $context;
@@ -547,6 +549,7 @@ function thing_query($args)
 	PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 	PREFIX dc: <http://purl.org/dc/elements/1.1/>
 	PREFIX dwc: <http://rs.tdwg.org/dwc/terms/>
+	PREFIX tn: <http://rs.tdwg.org/ontology/voc/TaxonName#>
 	PREFIX gql: <' . $config['hack_uri'] . '>
 
 	CONSTRUCT
@@ -631,6 +634,7 @@ function thing_query($args)
 					break;		
 		
 				case 'TaxonName':
+				case 'tn:TaxonName':
 					$schema_types[] = 'TaxonName';
 					break;
 	
@@ -661,7 +665,9 @@ function taxon_name_query($args)
 	
 	$sparql = 'PREFIX schema: <http://schema.org/>
 	PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+	PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
 	PREFIX bibo: <http://purl.org/ontology/bibo/>
+	PREFIX tn: <http://rs.tdwg.org/ontology/voc/TaxonName#>
 	PREFIX gql: <' . $config['hack_uri'] . '>
 
 	CONSTRUCT
@@ -670,9 +676,15 @@ function taxon_name_query($args)
 
 	 ?item schema:name ?name .
 	 
+	 ?item schema:url ?url .
+	 
 	  ?item schema:isBasedOn ?work .
 	  ?work gql:titles ?title .
 	  ?work bibo:doi ?doi .
+	  
+	  
+	  ?item tn:rankString ?rankString .
+	  
 	 
 	 
 	}
@@ -682,8 +694,28 @@ function taxon_name_query($args)
   
 	  ?item rdf:type ?type .
 	  
-	  ?item schema:name ?name .
+	{
+    	?item schema:name ?name .
+    }
+    UNION
+    {
+     ?item tn:nameComplete ?name .
+    }
+    
+    # ION
+    OPTIONAL
+    {
+    	?item rdfs:seeAlso ?url .
+    }    
+    
+    
+    # rank
+    OPTIONAL
+    {
+    	?item tn:rankString ?rankString .
+    }
 	  	  
+	  # publication (via "glue" )
 	  OPTIONAL
 	  {
 	  	?item schema:isBasedOn ?work .
@@ -725,6 +757,7 @@ function taxon_name_query($args)
 		switch ($type)
 		{
 	
+			case 'tn:TaxonName':
 			case 'TaxonName':
 				$schema_types[] = 'TaxonName';
 				break;
@@ -742,6 +775,52 @@ function taxon_name_query($args)
 	
 
 	return $doc;
+}	
+
+//----------------------------------------------------------------------------------------
+// List of variants of a taxon name, such objective synonyms, as a list.
+// We are matching edges in a graph, these edges may be in either direction w.r.t. to 
+// our target node.
+function taxon_name_alternate_name_query($args)
+{
+	global $config;
+	
+	$sparql = 'PREFIX schema: <http://schema.org/>
+	PREFIX tn: <http://rs.tdwg.org/ontology/voc/TaxonName#>
+	PREFIX gql: <' . $config['hack_uri'] . '>
+
+	CONSTRUCT
+	{
+	 ?source schema:name ?name	.
+	 ?source a ?type . 
+	}
+	WHERE
+	{
+	  VALUES ?target { <' . $args['id'] . '> }
+	  
+	  ?source (tn:hasBasionym|^tn:hasBasionym)* ?target .
+	    
+      {
+         ?source schema:name ?name .
+      }
+      UNION
+      {
+    	?source tn:nameComplete ?name .
+      }
+ 
+   	  ?source a ?type .
+  	
+  	  FILTER(?source != ?target)
+	} 
+	';
+
+	
+	//echo $sparql;
+	
+	$doc = list_object_query($args, $sparql);
+
+	return $doc;	
+
 }	
 
 //----------------------------------------------------------------------------------------
@@ -1354,7 +1433,7 @@ function taxon_name_works_query($args)
 	global $config;
 	
 	$sparql = 'PREFIX schema: <http://schema.org/>
-	PREFIX identifiers: <https://registry.identifiers.org/registry/>
+	PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 	PREFIX bibo: <http://purl.org/ontology/bibo/>
 	PREFIX gql: <' . $config['hack_uri'] . '>
 
@@ -1374,6 +1453,77 @@ function taxon_name_works_query($args)
 	WHERE
 	{
 	  VALUES ?taxonName { <' . $args['id'] . '> }
+	  
+	  ?taxonName schema:isBasedOn ?work .
+	  ?work rdf:type ?type .
+	  
+	  OPTIONAL
+		{
+		?work schema:name ?title . 
+		}
+			
+		OPTIONAL
+		{
+			?work schema:datePublished ?datePublished .
+		}
+		OPTIONAL
+		{
+			?work schema:url ?url . 
+		}
+		OPTIONAL
+		{
+		  ?work schema:identifier ?identifier .
+          ?identifier schema:propertyID "doi" .
+          ?identifier schema:value ?doi .
+		}   
+		
+		OPTIONAL
+		{
+			# get things that work is sameAs, and things sameAs work
+			?work schema:sameAs|^schema:sameAs ?sameAs
+		}   
+		
+	} 
+	';
+	
+	//echo $sparql;
+	
+	$doc = list_object_query($args, $sparql);
+
+	return $doc;	
+
+}	
+
+//----------------------------------------------------------------------------------------
+// List of works on name or its alternative names
+function taxon_name_alternate_works_query($args)
+{
+	global $config;
+	
+	$sparql = 'PREFIX schema: <http://schema.org/>
+	PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+	PREFIX tn: <http://rs.tdwg.org/ontology/voc/TaxonName#>
+	PREFIX bibo: <http://purl.org/ontology/bibo/>
+	PREFIX gql: <' . $config['hack_uri'] . '>
+
+	CONSTRUCT
+	{
+	 ?work a ?type . 
+
+	 ?work gql:titles ?title .
+	 ?work schema:datePublished ?datePublished .
+
+	 ?work bibo:doi ?doi .
+	 ?work schema:url ?url .
+	 
+	 ?work schema:sameAs ?sameAs .
+	 
+	}
+	WHERE
+	{
+	  VALUES ?target { <' . $args['id'] . '> }
+	  
+	  ?taxonName(tn:hasBasionym|^tn:hasBasionym)* ?target .
 	  
 	  ?taxonName schema:isBasedOn ?work .
 	  ?work rdf:type ?type .
@@ -2580,11 +2730,13 @@ if (0)
 		$result = person_scientific_names_query($args);
 	}	
 
-	if (0)
+	if (1)
 	{
 		// scientific names
 		$args = array(
-			'id' => 'urn:lsid:ipni.org:names:77191970-1' 
+			//'id' => 'urn:lsid:ipni.org:names:77191970-1' 
+			//'id' => 'urn:lsid:organismnames.com:name:5404959', 
+			'id' => 'urn:lsid:indexfungorum.org:names:553742',
 		);	
 		$result = taxon_name_query($args);
 	}	
@@ -2626,7 +2778,7 @@ if (0)
 		$result = specimen_query($args);
 	}	
 	
-	if (1)
+	if (0)
 	{
 		// who identified?
 		$args = array(
@@ -2661,6 +2813,27 @@ if (0)
 		);	
 		$result = person_recorded_specimen_query($args);
 	}	
+	
+	
+	if (0)
+	{
+		//  recorded?
+		$args = array(
+			'id' => 'urn:lsid:indexfungorum.org:names:513483' 
+		);	
+		$result = taxon_name_alternate_name_query($args);
+	}	
+
+	if (1)
+	{
+		//  recorded?
+		$args = array(
+			'id' => 'urn:lsid:ipni.org:names:77203835-1' 
+		);	
+		$result = taxon_name_alternate_works_query($args);
+	}	
+	
+	
 	
 	
 	print_r($result);

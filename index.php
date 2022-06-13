@@ -10,6 +10,8 @@ if(preg_match('/^\/gql.php/', $_SERVER["REQUEST_URI"])) return false;
 if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 //if(preg_match('/^\/images/', $_SERVER["REQUEST_URI"])) return false;
 
+if(preg_match('/^\/sparql.html/', $_SERVER["REQUEST_URI"])) return false;
+if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 
 
 ?>
@@ -167,6 +169,9 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 </head>
 <body>
 	<h1>Linked Data Aggregator Browser</h1>
+	
+	<div><a href="sparql.html" target="_new">SPARQL</a></div>
+	<hr />
 	
 	<div>
 		<input type="text" id="id" value="" size="60" placeholder="https://doi.org/10.5852/ejt.2020.629">
@@ -410,6 +415,13 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
   taxonName(id: "` + id + `") {
     id
     name
+    rankString
+    url
+    
+    alternateName {
+      id
+      name
+    }
     
     isBasedOn {
       id
@@ -418,6 +430,14 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
       }
       doi
     }    
+    
+    subjectOf {
+      id
+      titles {
+        title
+      }
+      doi
+    }        
   }
 }`;
 
@@ -441,14 +461,35 @@ if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
 				if (response.data.taxonName.id.match(/^urn:lsid/)) {
 					html += '<span class="lsid">' + '<a href="https://lsid.herokuapp.com/' + response.data.taxonName.id + '/jsonld" target="_new">' + response.data.taxonName.id + '</a></span><br/>';				
 				}
+
+				// URL
+				if (response.data.taxonName.url) {
+					html += '<span class="url">' + '<a href="' + response.data.taxonName.url + '" target="_new">' + response.data.taxonName.url+ '</a></span><br/>';				
+				}
 				
 				html += '<h3>Details</h3>';
 				
-				// works
-				if (response.data.taxonName.isBasedOn) {
+				// other names
+				if (response.data.taxonName.alternateName && response.data.taxonName.alternateName.length > 0) {
 					html += '<details open>';				
-					html += '<summary>Works (' + response.data.taxonName.isBasedOn.length + ')</summary>';
+					html += '<summary>Other names (' + response.data.taxonName.alternateName.length + ')</summary>';
+					html += name_list_to_html(response.data.taxonName.alternateName);
+					html += '</details>';
+				}
+
+				// work(s) is Based On
+				if (response.data.taxonName.isBasedOn && response.data.taxonName.isBasedOn.length > 0) {
+					html += '<details open>';				
+					html += '<summary>Based on (' + response.data.taxonName.isBasedOn.length + ')</summary>';
 					html += work_list_to_html(response.data.taxonName.isBasedOn);
+					html += '</details>';
+				}
+
+				// bibliography
+				if (response.data.taxonName.subjectOf && response.data.taxonName.subjectOf.length > 0) {
+					html += '<details open>';				
+					html += '<summary>Bibliography (' + response.data.taxonName.subjectOf.length + ')</summary>';
+					html += work_list_to_html(response.data.taxonName.subjectOf);
 					html += '</details>';
 				}
 				

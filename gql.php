@@ -805,15 +805,38 @@ class TaxonNameType extends ObjectType
                     		return taxon_name_works_query(array('id' => $thing->id));
             			}
                         
-                     ],      
+                     ],     
+                     
+                   'url' => [
+                        'type' => Type::string(),
+                        'description' => "URL for webpage for the taxonomic name."
+                    ],
                       
-                     /*
+                      
+                    
                     'rankString' => [
                         'type' => Type::string(),
                         'description' => 'The taxonomic rank of this name'
                     ],
-                    */
+                    
                                                         
+                    'alternateName' => [
+                        'type' => Type::listOf(TypeRegister::TaxonNameType()),
+                        'description' => "Variations of this name, such as objective synonyms",
+            			'resolve' => function($thing) {
+                    		return taxon_name_alternate_name_query(array('id' => $thing->id));
+            			}                        
+                     ],    
+                     
+                    'subjectOf' => [
+                        'type' => Type::listOf(TypeRegister::simpleWorkType()),
+                        'description' => "Publications about this name",
+            			'resolve' => function($thing) {
+                    		return taxon_name_alternate_works_query(array('id' => $thing->id));
+            			}
+                        
+                     ],     
+                                                                                                 
                  
                    
                     ];
