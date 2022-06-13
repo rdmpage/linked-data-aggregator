@@ -12,7 +12,7 @@ if (!$triplestore)
 $sources = array(
 	//'iflocal.yaml',
 	//'wikispecies.yaml',
-	'orcid.yaml'
+	//'orcid.yaml'
 	//'markhughes.yaml'
 	
 	//'uniprot.yaml'
@@ -25,6 +25,10 @@ $sources = array(
 	//'citation.yaml'
 	
 	//'bionomia.yaml'
+	
+	//'ipni.yaml',
+	//'if.yaml'
+	'ion.yaml'
 );
 
 
@@ -45,7 +49,8 @@ foreach ($sources as $source_filename)
 	
 	echo "Adding data for " . $source->name . "\n";
 	
-	if (add_source($triplestore, $source))
+	$break_on_fail = false;
+	if (add_source($triplestore, $source, $break_on_fail))
 	{
 		// all good
 	}

@@ -91,6 +91,10 @@ Note the `FROM <https://species.wikimedia.org>` clause before `WHERE`.
 
 However, `DESCRIBE` doesn’t need a named graph(!)
 
+### Literal values we can use to search/reconcile
+
+
+
 ### Exploratory queries
 
 #### Types in a dataset
