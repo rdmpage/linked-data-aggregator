@@ -12,6 +12,10 @@ require_once(__DIR__ . '/vendor/autoload.php');
 
 use Symfony\Component\Yaml\Yaml;
 
+$config['triples_chunk_size'] = 500000;
+$config['xml_chunk_size'] 	  =   1000;
+$config['sleep']			  =     10;
+
 //----------------------------------------------------------------------------------------
 function error_message($message, $errors)
 {
@@ -82,6 +86,8 @@ function chunk_triples($triples_filename, $chunks = 500000, $destination_dir = '
 	
 	return $chunk_files;
 }
+
+
 
 //----------------------------------------------------------------------------------------
 function chunk_xml($xml_filename, $chunks = 1000, $destination_dir = '')
@@ -303,6 +309,8 @@ function get_source($filename = 'source.yaml')
 // Result is array of error messages, which is empty if everything succeeded.
 function upload_chunks($chunk_files, $source, $triplestore, $break_on_fail = true)
 {
+	global $config;
+	
 	$errors = array();
 
 	$url = $triplestore->url . '/' . $triplestore->upload_endpoint;
@@ -343,6 +351,14 @@ function upload_chunks($chunk_files, $source, $triplestore, $break_on_fail = tru
 		exec($command, $output, $result_code);	
 		
 		//echo "Result code=$result_code\n";
+		if ($result_code != 0)
+		{
+			$errors[$chunk_filename] = $output;
+			if ($break_on_fail)
+			{
+				return $errors;
+			}							
+		}		
 		
 		if (count($output) > 0)
 		{
@@ -384,7 +400,7 @@ function upload_chunks($chunk_files, $source, $triplestore, $break_on_fail = tru
 		if ($count++ < $num_chunks-1)
 		{			
 			echo "Sleeping...\n";
-			sleep(5);
+			sleep($config['sleep']);
 		}
 	}
 	
@@ -524,13 +540,12 @@ function get_source_rdf($source, $force = false)
 
 //----------------------------------------------------------------------------------------
 // Add data from a source to the triple store
-function add_source($triplestore, $source)
+function add_source($triplestore, $source, $break_on_fail = true)
 {
+	global $config;
+	
 	$ok = true;
-	
-	$triples_chunk_size = 500000;
-	$xml_chunk_size 	= 1000;
-	
+		
 	echo "Getting data for " . $source->name . "\n\n";
 	
 	$rdf_filename = get_source_rdf($source);
@@ -546,13 +561,13 @@ function add_source($triplestore, $source)
 		switch ($source->distribution->encodingFormat)
 		{
 			case 'application/rdf+xml':			
-				$chunks = chunk_xml($rdf_filename, $xml_chunk_size);
+				$chunks = chunk_xml($rdf_filename, $config['xml_chunk_size']);
 				break;
 				
 			case 'application/n-triples':
 			case 'text/rdf+n3':
 			default:
-				$chunks = chunk_triples($rdf_filename, $triples_chunk_size);
+				$chunks = chunk_triples($rdf_filename, $config['triples_chunk_size']);
 				break;
 		}
 		
@@ -560,7 +575,7 @@ function add_source($triplestore, $source)
 		
 		echo "Uploading data for " . $source->name . "\n\n";
 
-		$errors = upload_chunks($chunks, $source, $triplestore, true);
+		$errors = upload_chunks($chunks, $source, $triplestore, $break_on_fail);
 
 		if (count($errors) > 0)
 		{
