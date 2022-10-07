@@ -117,3 +117,27 @@ WHERE {
 GROUP BY ?p
 ORDER BY DESC(?count)
 ```
+
+
+## Notes on data sources
+
+Failed to load ION
+
+curl 'http://65.108.253.35:9999/blazegraph/namespace/kg/sparql?context-uri=http%3A%2F%2Fwww.organismnames.com' --header Content-Type:text/rdf+n3 --data-binary @'/var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-1500000.nt' --progress-bar
+
+
+Error: Upload failed because of error
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-1500000.nt
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-4000000.nt
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-10000000.nt
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-12000000.nt
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-12500000.nt
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-23000000.nt
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-23500000.nt
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-24000000.nt
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-24500000.nt
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-32000000.nt
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-32500000.nt
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-41500000.nt
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-42000000.nt
+  /var/folders/ct/s8ct49m52q953nb6pzsdnvd40000gn/T/ion-42500000.nt

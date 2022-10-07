@@ -253,7 +253,12 @@ class SimpleWorkType extends ObjectType
                         'type' => Type::string(),
                         'description' => "DOI for this work."
                     ],
-                                                                                             
+                    
+                   'formattedCitation' => [
+                        'type' => Type::listOf(Type::string()),
+                        'description' => "Formatted citation"
+                    ], 
+                                                                                                                  
                     'titles' => [
                         'type' => Type::listOf(TypeRegister::titleType()),
                         'description' => "Title of the work, may be in more than one language."
@@ -521,13 +526,16 @@ class PersonType extends ObjectType
                         'type' => Type::ID(),
                         'description' => "ORCID for person."
                     ],
-                    
-                    /*
+                                        
                    'researchgate' => [
                         'type' => Type::ID(),
                         'description' => "ResearchGate profile for person"
                     ],   
-                    */                  
+ 
+                   'wikidata' => [
+                        'type' => Type::ID(),
+                        'description' => "Wikidata item person"
+                    ],               
                 
                     'givenName' => [
                         'type' => Type::string(),
@@ -571,21 +579,17 @@ class PersonType extends ObjectType
                         'resolve' => function($thing) {
                     		return person_scientific_names_query(array('id' => $thing->id));           	
                     	}
-                    ],      
-                    
+                    ],                  
                                         
                     'mainEntityOfPage' => [
                         'type' => Type::listOf(Type::string()),
                         'description' => "Web page about this person."
                     ],                    
-                      
-                    
-                    /*
+                                        
                     'thumbnailUrl' => [
                         'type' => Type::string(),
                         'description' => "URL to a thumbnail view of the image."
-                    ],
-                    */
+                    ],                    
                     
                     'images' => [
                         'type' => Type::listOf(TypeRegister::imageType()),
@@ -594,8 +598,7 @@ class PersonType extends ObjectType
                     		return person_images_query(array('id' => $thing->id));           	
                     	}
                    ],  
-                   
-                
+                                   
                     'identified' => [
                         'type' => Type::listOf(TypeRegister::simpleSpecimenType()),
                         'description' => "Specimens identified.",
@@ -603,7 +606,6 @@ class PersonType extends ObjectType
                     		return person_identified_specimen_query(array('id' => $thing->id));           	
                     	}
                     ],      
-
                 
                     'recorded' => [
                         'type' => Type::listOf(TypeRegister::simpleSpecimenType()),

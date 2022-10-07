@@ -14,6 +14,9 @@ use Symfony\Component\Yaml\Yaml;
 
 $config['triples_chunk_size'] = 500000;
 $config['xml_chunk_size'] 	  =   1000;
+$config['sleep']			  =     30;
+
+$config['triples_chunk_size'] = 100000; // Oxigraph seems to need smaller chunks, 
 $config['sleep']			  =     10;
 
 //----------------------------------------------------------------------------------------
@@ -199,7 +202,6 @@ function chunk_xml($xml_filename, $chunks = 1000, $destination_dir = '')
 // Get details on a triple store from the configuration file
 function get_triplestore($filename = 'triplestore.yaml')
 {
-	
 	// Parse YAML file and convert to object
 	$triplestore = (object)(Yaml::parseFile($filename));
 	
@@ -312,6 +314,15 @@ function upload_chunks($chunk_files, $source, $triplestore, $break_on_fail = tru
 	global $config;
 	
 	$errors = array();
+	
+	// Enforce format Blazegraph expects for triples (text/rdf+n3)
+	if ($triplestore->maker == "blazegraph")
+	{
+		if ($source->distribution->encodingFormat == "application/n-triples")
+		{
+			$source->distribution->encodingFormat = "text/rdf+n3";
+		}
+	}	
 
 	$url = $triplestore->url . '/' . $triplestore->upload_endpoint;
 	

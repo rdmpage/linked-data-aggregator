@@ -1,0 +1,12 @@
+# Configuration file for triple store
+
+# oxigraph_server -l . serve
+
+# Oxigraph
+maker:           oxigraph
+url:             http://localhost:7878
+query_endpoint:  query
+upload_endpoint: store
+update_endpoint: update
+graph_parameter: graph
+default_graph:   default

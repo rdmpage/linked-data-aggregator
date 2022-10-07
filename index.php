@@ -7,7 +7,10 @@ error_reporting(E_ALL);
 // for dev environment we do the job of .htaccess 
 if(preg_match('/^\/gql.php/', $_SERVER["REQUEST_URI"])) return false;
 
+if(preg_match('/^\/css/', $_SERVER["REQUEST_URI"])) return false;
+if(preg_match('/^\/fonts/', $_SERVER["REQUEST_URI"])) return false;
 if(preg_match('/^\/js/', $_SERVER["REQUEST_URI"])) return false;
+
 //if(preg_match('/^\/images/', $_SERVER["REQUEST_URI"])) return false;
 
 if(preg_match('/^\/sparql.html/', $_SERVER["REQUEST_URI"])) return false;
@@ -137,6 +140,8 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 	}	
 	
 	</style>
+	
+	<link rel="stylesheet" href="css/academicons.min.css"/>
 	
 	<!-- jquery -->
     <script src="js/jquery-1.11.2.min.js" type="text/javascript"></script>
@@ -360,15 +365,16 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 			function(response){ 
 				if (response.data.search.results) {
 				   var html = '';
+				   
+				   html += '<h2>' + response.data.search.results.length + ' result(s) for "' + id + '"' + '</h2>';
+				   
 				   for (var i in response.data.search.results) {
-				   	html += '<div style="padding:0.2em;display: block;overflow: auto;border-bottom:1px solid rgb(128,128,128);">';
+				   	html += '<div style="padding:0.2em;display:block;overflow:auto;">';
 				   	
-				   	html += '<div style="padding:4px;float:left;width:80px;height:80px;">';
-				   	
+				   	html += '<div style="padding:4px;float:left;width:40px;height:40px;">';				   	
 					if (response.data.search.results[i].thumbnailUrl) {
-						html += '<img style="object-fit:cover;width:80px;height:80px;" src="https://aipbvczbup.cloudimg.io/s/height/80/' + response.data.search.results[i].thumbnailUrl + '">';
-					}
-			   	
+						html += '<img style="object-fit:cover;width:40px;height:40px;" src="https://aezjkodskr.cloudimg.io/' + response.data.search.results[i].thumbnailUrl + '?height=40">';
+					}			   	
 			   	    html += '</div>';
 				   	
 					// not verything in list may have a URI
@@ -637,7 +643,7 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 			html += '<li style="display:block;overflow:auto;">';
 			
 			if (works[i].thumbnailUrl) {
-				html += '<img style="border:1px solid rgb(192,192,192);float:left;height:32px;width:32px;object-fit:cover;"  src="https://aipbvczbup.cloudimg.io/s/height/32/' + works[i].thumbnailUrl + '">';
+				html += '<img style="border:1px solid rgb(192,192,192);float:left;height:32px;width:32px;object-fit:cover;"  src="https://aezjkodskr.cloudimg.io/' + works[i].thumbnailUrl + '?height=32">';
 			} else {
 				html += '<div style="border:1px solid rgb(192,192,192);float:left;height:32px;width:32px;"></div>';
 			}
@@ -661,7 +667,8 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 			
 			// DOI?
 			if(works[i].doi) {
-				html += '&nbsp;<span class="doi"><a href="https://doi.org/' + works[i].doi + '" target="_new">' + works[i].doi + '</a></span>';
+				//html += '&nbsp;<span class="doi"><a href="https://doi.org/' + works[i].doi + '" target="_new">' + works[i].doi + '</a></span>';
+				html += '&nbsp;<i class="ai ai-doi"></i><a href="https://doi.org/' + works[i].doi + '" target="_new">' + works[i].doi + '</a>';
 			}
 			
 			// Other versions?
@@ -721,7 +728,8 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 			
 			// ORCID?
 			if (list[i].orcid) {
-				html +='<img src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png">&nbsp;';
+				//html +='<img src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png">&nbsp;';
+				html += '<i class="ai ai-orcid"></i>';
 			}
 			
 			// not verything in list may have a URI
@@ -777,7 +785,7 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 				if (images[i].thumbnailUrl) {
 					html += '<li>'
 					html += '<a href="./?id=' + images[i].id + '">';
-					html += '<img src="https://aipbvczbup.cloudimg.io/s/height/80/' + images[i].thumbnailUrl + '">';
+					html += '<img src="https://aezjkodskr.cloudimg.io/' + images[i].thumbnailUrl + '?height=80">';
 					html += '</a>';
 					html += '</li>'
 				}
@@ -798,6 +806,10 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 	  person(id: "` + id + `"){
 		id
 		orcid
+		researchgate
+		wikidata
+		
+		thumbnailUrl
 		
 		mainEntityOfPage
 		
@@ -831,16 +843,16 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
     	thumbnailUrl    
     }
     
-   identified {
-      id
-      name
-    }
-    
-    recorded {
-      id
-      name
-    }        
-		
+#  identified {
+#     id
+#     name
+#   }
+#   
+#   recorded {
+#     id
+#     name
+#   }        
+#		
 	  }
 	}`;
 
@@ -857,10 +869,20 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 				
 				//html += '<h2>' + response.data.person.name[0] + '</h2>';
 				html += '<h2>' + response.data.person.name + '</h2>';
+				
+				// Image?
+				if (response.data.person.thumbnailUrl) {
+					html += '<div style="padding:4px;width:80px;height:80px;">';		
+					html += '<img style="object-fit:cover;width:80px;height:80px;" src="https://aezjkodskr.cloudimg.io/' + response.data.person.thumbnailUrl + '?height=80">';
+					html += '</div>';
+				}		
+				
+				
 								
 				// ORCID?
 				if (response.data.person.orcid) {
-					html += '<div><img src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png">';
+					//html += '<div><img src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png">';
+					html += '<i class="ai ai-orcid"></i>';
 					html += '&nbsp;<a href="https://orcid.org/' + response.data.person.orcid + '" target="_new">';
 					html += 'https://orcid.org/' + response.data.person.orcid;
 					html += '</a>';
@@ -885,6 +907,21 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 					}
 					html += '</span>';
 				}
+				
+				// Identifiers
+				if (response.data.person.researchgate) {
+					html += '<div>';
+					html += '<i class="ai ai-researchgate"></i>';
+					html += '<a href="https://www.researchgate.net/profile/' + response.data.person.researchgate + '" target="_new">' + response.data.person.researchgate + '</a>';	
+					html += '</div>';
+				}	
+
+				if (response.data.person.wikidata) {
+					html += '<div>';
+					html += '<a href="http://www.wikidata.org/entity/' + response.data.person.wikidata + '" target="_new">' + response.data.person.wikidata + '</a>';	
+					html += '</div>';
+				}				
+				
 				
 				html += '<h3>Activities</h3>';
 				
@@ -1066,7 +1103,8 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 						html += '<div style="display:inline;padding-right:1em;">';
 						
 						if (response.data.work.author[i].orcid) {
-							html += '<img src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png">&nbsp;';
+							//html += '<img src="https://info.orcid.org/wp-content/uploads/2019/11/orcid_16x16.png">&nbsp;';
+							html += '<i class="ai ai-orcid"></i>';
 						}
 					
 						// thing or string?
@@ -1115,7 +1153,8 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 				
 				// DOI							
 				if (response.data.work.doi) {
-					html += '<br><span class="doi"><a href="https://doi.org/' + response.data.work.doi + '" target="_new">' + response.data.work.doi + '</a></span>';					
+					//html += '<br><span class="doi"><a href="https://doi.org/' + response.data.work.doi + '" target="_new">' + response.data.work.doi + '</a></span>';					
+					html += '<i class="ai ai-doi"></i><a href="https://doi.org/' + response.data.work.doi + '" target="_new">' + response.data.work.doi + '</a>';
 				}
 
 				// Other versions?
@@ -1311,7 +1350,7 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 
 				if (response.data.image.contentUrl) {
 					html += '<div style="text-align:center;">';
-					html += '<img class="figure" src="https://aipbvczbup.cloudimg.io/s/width/600/' + response.data.image.contentUrl + '">';	
+					html += '<img class="figure" src="https://aezjkodskr.cloudimg.io/' + response.data.image.contentUrl + '?width=600">';	
 					html += '</div>';			
 				}
 				
@@ -1519,7 +1558,9 @@ if(preg_match('/^\/sparql_proxy.php/', $_SERVER["REQUEST_URI"])) return false;
 					html += '<a href="index.html?id=' + response.data.container.hasPart[i].id + '">' + get_title(response.data.container.hasPart[i].titles) + '</a>';
 				
 					if(response.data.container.hasPart[i].doi) {
-						html += '<br><span class="doi"><a href="https://doi.org/' + response.data.container.hasPart[i].doi + '" target="_new">' + response.data.container.hasPart[i].doi + '</a></span>';
+						//html += '<br><span class="doi"><a href="https://doi.org/' + response.data.container.hasPart[i].doi + '" target="_new">' + response.data.container.hasPart[i].doi + '</a></span>';
+						html += '<i class="ai ai-doi"></i><a href="https://doi.org/' + response.data.container.hasPart[i].doi + '" target="_new">' + response.data.container.hasPart[i].doi + '</a>';
+
 					}
 				
 					html += '</li>';

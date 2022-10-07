@@ -83,7 +83,11 @@ $context->mainEntityOfPage = $mainEntityOfPage;
 
 $context->ringgold	= "gql:ringgold";
 $context->ror		= "gql:ror";
-$context->titles		= "gql:titles";
+$context->titles	= "gql:titles";
+
+$context->researchgate	= "gql:researchgate";
+$context->wikidata		= "gql:wikidata";
+
 
 // so we can have dois as keys
 $context->bibo = 'http://purl.org/ontology/bibo/';
@@ -501,7 +505,7 @@ function search_object_query($args, $sparql, $context = null)
 	
 	$doc = JsonLD::compact($json, json_encode($context));
 	
-	// print_r($doc);
+	//print_r($doc);
 	
 	if (isset($doc->{'@graph'}))
 	{
@@ -521,12 +525,20 @@ function search_object_query($args, $sparql, $context = null)
 	
 	// post process 
 	
-	foreach ($doc->results as &$result)
+	// hits?
+	if (!isset($doc->results))
 	{
-		if (isset($result->name))
+		$doc->results = array();
+	}
+	else
+	{	
+		foreach ($doc->results as &$result)
 		{
-			$result->name = literals_to_array($result->name);
-		}	
+			if (isset($result->name))
+			{
+				$result->name = literals_to_array($result->name);
+			}	
+		}
 	}
 		
 	// cleanup
@@ -1969,6 +1981,10 @@ function person_query($args)
 	 
 	 ?thing gql:orcid ?orcid .
 	 
+	 ?thing gql:researchgate ?researchgate .
+	 ?thing gql:wikidata ?wikidata .
+	 ?thing schema:thumbnailUrl ?thumbnailUrl .
+	 
 	 ?thing schema:mainEntityOfPage ?mainEntityOfPage .
 	}
 	WHERE
@@ -1997,8 +2013,31 @@ function person_query($args)
   			?thing schema:mainEntityOfPage ?mainEntityOfPage .
   		}
   		
-  		
-		
+  		# stuff from ResearchGate 
+  		OPTIONAL
+  		{
+  			?rg_profile schema:sameAs ?thing.
+  			
+			 OPTIONAL
+			  {
+				?rg_profile schema:sameAs ?researchgate_url .
+				FILTER regex(STR(?researchgate_url), "researchgate.net") .
+				BIND( REPLACE( STR(?researchgate_url),"https://www.researchgate.net/profile/","" ) AS ?researchgate). 
+			  }
+  
+			  OPTIONAL
+			  {
+				?rg_profile schema:sameAs ?wikidata_url .
+				FILTER regex(STR(?wikidata_url), "wikidata") .
+				BIND( REPLACE( STR(?wikidata_url),"http://www.wikidata.org/entity/","" ) AS ?wikidata). 
+			  }  
+			  
+			  OPTIONAL
+			  {
+			  	?rg_profile schema:image ?image .
+			  	?image schema:contentUrl ?thumbnailUrl .
+			  } 		
+  		}
 	} 
 	';
 	
@@ -2116,6 +2155,7 @@ function search_query($args)
 {
 	global $config;
 	
+	// Blazegraph full text (slow and ugly)
 	$sparql = 'PREFIX schema: <http://schema.org/>
 PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
 PREFIX bds: <http://www.bigdata.com/rdf/search#>
@@ -2172,6 +2212,55 @@ LIMIT 10
 
 
 	';
+	
+	// simple literal search
+	$sparql = '
+PREFIX schema: <http://schema.org/>
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX dc: <http://purl.org/dc/elements/1.1/>
+PREFIX tn: <http://rs.tdwg.org/ontology/voc/TaxonName#>
+PREFIX gql: <' . $config['hack_uri'] . '>
+
+CONSTRUCT
+{
+	<http://example.rss> a schema:DataFeed;
+		gql:results ?item .
+ 
+	?item a schema:DataFeedItem .
+    ?item a ?type .
+    ?item schema:name ?name .
+    
+    ?item schema:thumbnailUrl ?thumbnailUrl .
+
+    ?item schema:identifier ?identifier .
+}
+WHERE
+{
+  VALUES ?query { "' . addcslashes($args['query'], '"') . '" }
+
+  ?item schema:name|dc:title|tn:nameComplete|schema:alternateName|schema:keywords ?query .
+  
+  {
+  	?item schema:name|dc:title|tn:nameComplete ?name .
+  }
+  
+  OPTIONAL 
+  {
+	  ?item schema:thumbnailUrl ?thumbnailUrl .
+  }
+  
+  OPTIONAL
+  {
+    ?item schema:identifier ?pv .
+    ?pv schema:propertyID ?propertyID .
+    ?pv schema:value ?value .
+    BIND(CONCAT(?propertyID, ":", ?value) AS ?identifier)
+  }  
+ 
+  ?item a ?type .
+  
+}
+LIMIT 10';	
 	
 	//echo $sparql;
 	
@@ -2622,7 +2711,6 @@ function person_recorded_specimen_query($args)
 }	
 
 
-
 if (0)
 {
 	if (0)
@@ -2741,11 +2829,11 @@ if (0)
 		$result = taxon_name_query($args);
 	}	
 	
-	if (0)
+	if (1)
 	{
 		// scientific names
 		$args = array(
-			'id' => 'urn:lsid:ipni.org:names:77191970-1' 
+			'id' => 'urn:lsid:ipni.org:names:77158272-1' 
 		);	
 		$result = taxon_name_works_query($args);
 	}	
@@ -2754,7 +2842,8 @@ if (0)
 	{
 		// search
 		$args = array(
-			'query' => 'Newmania: A new ginger genus from central Vietnam' // 'Scaphisoma' 
+			//'query' => 'Newmania: A new ginger genus from central Vietnam' // 'Scaphisoma' 
+			'query' => 'Paramollugo'
 		);	
 		$result = search_query($args);
 	}	
@@ -2817,16 +2906,14 @@ if (0)
 	
 	if (0)
 	{
-		//  recorded?
 		$args = array(
 			'id' => 'urn:lsid:indexfungorum.org:names:513483' 
 		);	
 		$result = taxon_name_alternate_name_query($args);
 	}	
 
-	if (1)
+	if (0)
 	{
-		//  recorded?
 		$args = array(
 			'id' => 'urn:lsid:ipni.org:names:77203835-1' 
 		);	

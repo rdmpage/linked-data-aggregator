@@ -8,10 +8,23 @@ Notes on various datasets while we explore
 
 - do we need to extend notion of citation to match Plazi’s use of treatments citing images?
 
+- Zenodo has given two different people the same ORCID: 
+
+```
+PREFIX schema: <http://schema.org/>
+
+select * where {
+  GRAPH ?g { <https://orcid.org/0000-0003-4418-0552> schema:name ?name . }
+}
+```
+
+I think this is due to https://zenodo.org/record/6550195 and all its parts.
+
 ## Interesting examples
 
 PID | Name | Notes
 --|--|--
+https://doi.org/10.1590/2175-7860201869402 | Brazilian flora 2020: Innovation and collaboration to meet target 1 of the global strategy for plant conservation (GSPC) | Huge numbers of ORCIDs 
 https://doi.org/10.11646/zootaxa.4196.3.9 | Photography-based taxonomy is inadequate, unnecessary, and potentially harmful for biological sciences | Lots of ORCIDs
 https://doi.org/10.1371/journal.pbio.2005075 | Taxonomy based on science is necessary for global conservation | Lots of ORCIDs
 https://doi.org/10.11646/zootaxa.4061.1.9 | The Shannoniella sisters (Diptera: Rhinophoridae) | ORCID and Wikispecies
@@ -29,6 +42,15 @@ https://doi.org/10.5281/zenodo.267559 | FIGURES 135–140 in The Neotropical cuc
 https://doi.org/10.5281/zenodo.3649001 | FIGURE 3 in Three challenges to contemporaneous taxonomy from a licheno-mycological perspective | Interesting map, can we reproduce this from data here?
 https://doi.org/10.1111/j.1096-0031.2011.00348.x | Impediments to taxonomy and users of taxonomy: Accessibility and impact evaluation | can we use this to test “related” based on existing citation data?
 https://doi.org/10.3897/zookeys.885.38980 | Notes on the sinistral helicoid snail Bertia cambojiensis (Reeve, 1860) from Vietnam (Eupulmonata, Dyakiidae) | nice pics, specimen has sequences, lots of potential BHL citations
+https://doi.org/10.3897/phytokeys.73.10365 | Taxonomic revision and distribution of herbaceous Paramollugo (Molluginaceae) in the Eastern Hemisphere | Nice map
+urn:lsid:indexfungorum.org:names:807796 | Austroafricana parva | Two references in bibliography
+urn:lsid:indexfungorum.org:names:500833 | Colletogloeopsis stellenboschiana | Three names and three references
+https://orcid.org/0000-0002-3874-7690 | David Salazar-Valenzuela | This author has a ResearchGate profile that has embedded schema.org with `sameAs` links to ORCID and Wikidata. Note that ORCID doesn’t have the ResearchGate link.
+https://doi.org/10.5281/zenodo.6512406 | Begonia ambanizanensis Scherber. & Duruiss. 2019, sp. nov. | Treatment with cited figures, note we have no mention of the LSID 
+urn:lsid:ipni.org:names:77207009-1 | Begonia ambanizanensis | IPNI LSID has http://purl.org/dc/terms/bibliographicCitation for DOI and http://rs.tdwg.org/ontology/voc/Common#publishedInCitation for BHL http://www.biodiversitylibrary.org/openurl?ctx_ver&#x3D;Z39.88-2004&rft.date&#x3D;2019&rft.issue&#x3D;1&rft.spage&#x3D;60&rft.volume&#x3D;41&rft_id&#x3D;http://www.biodiversitylibrary.org/bibliography/600&rft_val_fmt&#x3D;info:ofi/fmt:kev:mtx:book&url_ver&#x3D;z39.88-2004
+https://doi.org/10.11646/zootaxa.4885.1.3 |The Rhyacophila fasciata Group in Croatia and Bosnia and Herzegovina… | Many variations on the title
+https://doi.org/10.11646/zootaxa.3949.4.1 | Revision of the Sundaland species of the genus Dysphaea Selys, 1853 | Nice pics of damselflies
+https://doi.org/10.11646/zootaxa.4949.1.4 | Four new species of parasitoid wasp (Hymenoptera: Braconidae) described through a citizen science partnership with schools in regional South Australia | Word cloud and citizen science
 
 
 ## Blank nodes
@@ -164,12 +186,6 @@ WHERE
        ?authors1 schema:mainEntityOfPage ?page .
     	?page schema:name ?name .
   }
-
-
-
-  
-         
-         
          
   # ORCID
   ?work schema:creator ?authors2 .
@@ -189,6 +205,71 @@ WHERE
   
 }
 
+```
+
+### Authors with and without ORCIDs
+
+#### Compare authors of same work
+
+```
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/>
+SELECT * WHERE {
+   VALUES ?work { <https://doi.org/10.3897/phytokeys.73.10365> } 
+   ?work schema:creator ?creator .
+   ?work schema:name ?name .
+   {
+       ?creator schema:name ?creator_name .
+   }
+   UNION
+   {
+     ?creator schema:givenName ?givenName .         
+     ?creator schema:familyName ?familyName .
+
+     BIND(CONCAT(?familyName, ", ", ?givenName) AS ?creator_name)           
+   }
+} 
+```
+
+
+### Treatments
+
+Can we have a SPARQL query to link LSID names to publications to treatments via identifier and/or string matching so we can, for example, link IPNI names to Plaza treatments?
+
+- SPARQL query
+- Do we need to text mine treatment names to extract taxon names?
+
+
+### Organisations
+
+In ORCID these often don’t have `@id`
+
+```
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX schema: <http://schema.org/>
+SELECT * WHERE {
+  ?organisation a schema:Organization  .
+  ?organisation schema:name ?name .
+  
+  ?organisation schema:identifier ?identifier .
+  ?identifier schema:propertyID "ROR" .
+  ?identifier schema:value ?value .
+} 
+LIMIT 100
+```
+
+### Taxon name relationships
+
+```
+PREFIX rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>
+PREFIX rdfs: <http://www.w3.org/2000/01/rdf-schema#>
+PREFIX tn: <http://rs.tdwg.org/ontology/voc/TaxonName#>
+PREFIX urn: <http://fliqz.com/>
+SELECT * WHERE {
+    ?n1 (tn:hasBasionym|^tn:hasBasionym)* <urn:lsid:indexfungorum.org:names:513483> .
+} 
 ```
 
 
