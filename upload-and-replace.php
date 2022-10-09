@@ -5,8 +5,8 @@
 
 require_once (dirname(__FILE__) . '/core.php');
 
-$triplestore = get_triplestore('blazegraph.yaml');
-//$triplestore = get_triplestore('oxigraph.yaml');
+//$triplestore = get_triplestore('blazegraph.yaml');
+$triplestore = get_triplestore('oxigraph.yaml');
 
 if (!$triplestore)
 {
@@ -54,7 +54,7 @@ foreach ($sources as $source_filename)
 	echo "Adding data for " . $source->name . "\n";
 	
 	$break_on_fail = false;
-	if (add_source($triplestore, $source, $break_on_fail))
+	if (add_source($triplestore, $source))
 	{
 		// all good
 	}

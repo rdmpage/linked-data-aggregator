@@ -3,6 +3,11 @@
 /vendor/
 .DS_Store
 
+/oxigraph/
+!/oxigraph/README.md
+
+
 *.nt
+*.yaml
 
 cookie.txt

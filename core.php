@@ -16,15 +16,16 @@ $config['triples_chunk_size'] = 500000;
 $config['xml_chunk_size'] 	  =   1000;
 $config['sleep']			  =     30;
 
-$config['triples_chunk_size'] = 100000; // Oxigraph seems to need smaller chunks, 
-$config['sleep']			  =     10;
-
 //----------------------------------------------------------------------------------------
 function error_message($message, $errors)
 {
 	echo "Error: " . $message . "\n";
+	
+	$count = 0;
+	
 	foreach ($errors as $source => $error)
 	{
+		echo "[" . $count++ . "]";
 		if (is_array($error))
 		{
 			echo "  " . $source . "\n";
@@ -202,6 +203,8 @@ function chunk_xml($xml_filename, $chunks = 1000, $destination_dir = '')
 // Get details on a triple store from the configuration file
 function get_triplestore($filename = 'triplestore.yaml')
 {
+	global $config;
+	
 	// Parse YAML file and convert to object
 	$triplestore = (object)(Yaml::parseFile($filename));
 	
@@ -226,6 +229,26 @@ function get_triplestore($filename = 'triplestore.yaml')
 	}
 	
 	$triplestore->maker = strtolower($triplestore->maker);
+	
+	// defaults for uploading
+	if (!isset($triplestore->sleep))
+	{
+		$triplestore->sleep = $config['sleep'];
+	}
+	if (!isset($triplestore->triples_chunk_size))
+	{
+		$triplestore->triples_chunk_size = $config['triples_chunk_size'];
+	}
+	if (!isset($triplestore->xml_chunk_size))
+	{
+		$triplestore->xml_chunk_size = $config['xml_chunk_size'];
+	}
+
+	if (!isset($triplestore->break_on_fail))
+	{
+		$triplestore->break_on_fail = true;
+	}
+	
 
 	return $triplestore;
 }
@@ -306,13 +329,11 @@ function get_source($filename = 'source.yaml')
 
 //----------------------------------------------------------------------------------------
 // Given a list of chunk filenames, and details on the source and triple store,
-// upload the chuncks. If we encounter an error we either exit ($break_on_fail
-// is true) or continue ($break_on_fail is false).
+// upload the chuncks. If we encounter an error we either exit ($triplestore->break_on_fail
+// is true) or continue ($triplestore->break_on_fail is false).
 // Result is array of error messages, which is empty if everything succeeded.
-function upload_chunks($chunk_files, $source, $triplestore, $break_on_fail = true)
-{
-	global $config;
-	
+function upload_chunks($chunk_files, $source, $triplestore)
+{	
 	$errors = array();
 	
 	// Enforce format Blazegraph expects for triples (text/rdf+n3)
@@ -365,7 +386,7 @@ function upload_chunks($chunk_files, $source, $triplestore, $break_on_fail = tru
 		if ($result_code != 0)
 		{
 			$errors[$chunk_filename] = $output;
-			if ($break_on_fail)
+			if ($triplestore->break_on_fail)
 			{
 				return $errors;
 			}							
@@ -387,7 +408,7 @@ function upload_chunks($chunk_files, $source, $triplestore, $break_on_fail = tru
 					{
 						// badness
 						$errors[$chunk_filename] = array_slice($output, 0, 2);
-						if ($break_on_fail)
+						if ($triplestore->break_on_fail)
 						{
 							return $errors;
 						}										
@@ -398,7 +419,7 @@ function upload_chunks($chunk_files, $source, $triplestore, $break_on_fail = tru
 				case 'oxigraph':
 				default:
 					$errors[$chunk_filename] = $output;
-					if ($break_on_fail)
+					if ($triplestore->break_on_fail)
 					{
 						return $errors;
 					}					
@@ -411,7 +432,7 @@ function upload_chunks($chunk_files, $source, $triplestore, $break_on_fail = tru
 		if ($count++ < $num_chunks-1)
 		{			
 			echo "Sleeping...\n";
-			sleep($config['sleep']);
+			sleep($triplestore->sleep);
 		}
 	}
 	
@@ -551,9 +572,8 @@ function get_source_rdf($source, $force = false)
 
 //----------------------------------------------------------------------------------------
 // Add data from a source to the triple store
-function add_source($triplestore, $source, $break_on_fail = true)
+function add_source($triplestore, $source)
 {
-	global $config;
 	
 	$ok = true;
 		
@@ -572,13 +592,13 @@ function add_source($triplestore, $source, $break_on_fail = true)
 		switch ($source->distribution->encodingFormat)
 		{
 			case 'application/rdf+xml':			
-				$chunks = chunk_xml($rdf_filename, $config['xml_chunk_size']);
+				$chunks = chunk_xml($rdf_filename, $triplestore->xml_chunk_size);
 				break;
 				
 			case 'application/n-triples':
 			case 'text/rdf+n3':
 			default:
-				$chunks = chunk_triples($rdf_filename, $config['triples_chunk_size']);
+				$chunks = chunk_triples($rdf_filename, $triplestore->triples_chunk_size);
 				break;
 		}
 		
@@ -586,7 +606,7 @@ function add_source($triplestore, $source, $break_on_fail = true)
 		
 		echo "Uploading data for " . $source->name . "\n\n";
 
-		$errors = upload_chunks($chunks, $source, $triplestore, $break_on_fail);
+		$errors = upload_chunks($chunks, $source, $triplestore);
 
 		if (count($errors) > 0)
 		{

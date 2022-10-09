@@ -4,8 +4,8 @@
 
 require_once (dirname(__FILE__) . '/core.php');
 
-$triplestore = get_triplestore('blazegraph.yaml');
-//$triplestore = get_triplestore('oxigraph.yaml');
+//$triplestore = get_triplestore('blazegraph.yaml');
+$triplestore = get_triplestore('oxigraph.yaml');
 
 if (!$triplestore)
 {
@@ -15,14 +15,14 @@ if (!$triplestore)
 $sources = array(
 	//'iflocal.yaml',
 	//'wikispecies.yaml',
-	'orcid.yaml'
+	//'orcid.yaml'
 	//'markhughes.yaml'
 	
 	//'uniprot.yaml'
 	
 	//'col.yaml'
 	
-	//'zenodo.yaml'
+	'zenodo.yaml'
 	
 	//'glue.yaml'
 	//'citation.yaml'
@@ -43,6 +43,8 @@ foreach ($sources as $source_filename)
 	}
 	
 	echo "Adding data for " . $source->name . "\n";
+	
+	$break_on_fail = false;
 		
 	if (add_source($triplestore, $source))
 	{
