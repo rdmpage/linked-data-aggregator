@@ -15,14 +15,16 @@ if (!$triplestore)
 $sources = array(
 	//'iflocal.yaml',
 	//'wikispecies.yaml',
-	//'orcid.yaml'
+
+	'orcid.yaml'
+
 	//'markhughes.yaml'
 	
 	//'uniprot.yaml'
 	
 	//'col.yaml'
 	
-	'zenodo.yaml'
+	//'zenodo.yaml'
 	
 	//'glue.yaml'
 	//'citation.yaml'

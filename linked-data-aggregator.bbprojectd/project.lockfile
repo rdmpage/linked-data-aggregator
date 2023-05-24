@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>BuildNumber</key>
-	<string>41720020</string>
+	<string>41800050</string>
 	<key>BundleIdentifier</key>
 	<string>com.barebones.bbedit</string>
 	<key>HostIdentifier</key>
@@ -11,20 +11,20 @@
 	<key>HostName</key>
 	<string>Roderick’s MacBook Pro</string>
 	<key>LockDate</key>
-	<date>2022-10-09T15:50:15Z</date>
+	<date>2023-05-24T06:45:33Z</date>
 	<key>LockID</key>
-	<string>88CF3C57-CDEC-424D-BB3F-D7CB49B83E10</string>
+	<string>E097560F-F5F6-4E03-9021-37A8E226C577</string>
 	<key>MarketingVersion</key>
-	<string>14.5.2</string>
+	<string>14.6.3</string>
 	<key>NetworkVolume</key>
 	<false/>
 	<key>ProcessIdentifier</key>
-	<integer>6245</integer>
+	<integer>552</integer>
 	<key>UserName</key>
 	<string>rpage</string>
 	<key>Version</key>
 	<integer>3</integer>
 	<key>VolumeIdentifier</key>
-	<string>7B515677-3A02-48E1-9D84-40F75C9595A4</string>
+	<string>01138E0F-3BEC-4067-99A9-62907148D78D</string>
 </dict>
 </plist>

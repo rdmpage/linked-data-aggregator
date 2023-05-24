@@ -62,6 +62,8 @@ function chunk_triples($triples_filename, $chunks = 500000, $destination_dir = '
 	$count = 0;
 
 	$file_handle = fopen($triples_filename, "r");
+	if (!$file_handle) { die ("Could not open file $triples_filename line: " . __LINE__ . "\n"); }
+	
 	while (!feof($file_handle)) 
 	{
 		if ($count == 0)
@@ -117,6 +119,8 @@ function chunk_xml($xml_filename, $chunks = 1000, $destination_dir = '')
 	
 
 	$file_handle = fopen($xml_filename, "r");
+	if (!$file_handle) { die ("Could not open file $xml_filename line: " . __LINE__ . "\n"); }
+
 	while (!feof($file_handle)) 
 	{	
 		$line = fgets($file_handle);
@@ -499,6 +503,7 @@ function get_source_rdf($source, $force = false)
 			// If source is remote we download it
 			case 'ftp':
 			case 'http':
+			case 'https':
 			default:
 				$command = "curl -L '" . $source->distribution->contentUrl . "' > '" . $dest_filename. "'";
 				echo $command . "\n";
@@ -517,7 +522,7 @@ function get_source_rdf($source, $force = false)
 	if (count($errors) == 0)
 	{
 		// do we need to decompress the file?
-		$finfo = finfo_open(FILEINFO_MIME_TYPE); // return mime type ala mimetype extension
+		$finfo = finfo_open(FILEINFO_MIME_TYPE); // return mime type a la mimetype extension
 		$mime_type = finfo_file($finfo, $dest_filename);
 		finfo_close($finfo);
 	
@@ -528,7 +533,9 @@ function get_source_rdf($source, $force = false)
 		{
 			case 'application/zip':
 				echo "Unzipping file...\n";
-				$command = 'unzip -o -v ' . $dest_filename;
+				$command = 'unzip ' . $dest_filename;
+				
+				echo $command . "\n";
 				system($command);
 			
 				// assume simple file name mapping
